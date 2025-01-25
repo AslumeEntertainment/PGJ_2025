@@ -7,9 +7,8 @@
 #include "Headers/GeneralDelegates.h"	
 #include "PaintableItem.generated.h"
 
-/**
- * 
- */
+class ABubbleController;
+
 UCLASS()
 class BUBBLES_API APaintableItem : public AItemBase
 {
@@ -20,7 +19,7 @@ public:
 
 private:
 	UPROPERTY()
-	APlayerController* InteractingPlayer;
+	ABubbleController* InteractingPlayer;
 
 	UPROPERTY()
 	int Iterations = 0;
@@ -45,8 +44,8 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float CleaningInterval = 1;
 
-	//UPROPERTY(Replicated)
-	//bool IsLocked = false;
+	UPROPERTY(Replicated)
+	bool IsLocked = false;
 
 	FTimerHandle CleaningPeriodTimer;
 
@@ -58,9 +57,6 @@ protected:
 	void UpdateTexture();
 
 	void ProgressCleaning();
-
-	UFUNCTION(Client, Reliable)
-	void Client_StopInteracting();
 
 	void StopInteraction();
 

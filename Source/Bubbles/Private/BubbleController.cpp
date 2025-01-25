@@ -16,8 +16,8 @@ void ABubbleController::Client_SetInputMode_Implementation(EInputMode  InputMode
 {
 	switch (InputMode)
 	{
-		case EInputMode::GameOnly: SetInputMode(FInputModeGameOnly()); break;
-		case EInputMode::GameAndUI: SetInputMode(FInputModeGameAndUI()); break;
-		case EInputMode::UIOnly: SetInputMode(FInputModeUIOnly()); break;
+	case EInputMode::GameOnly: SetInputMode(FInputModeGameOnly()); IsInputLocked = false;  break;
+	case EInputMode::GameAndUI: SetInputMode(FInputModeGameAndUI()); IsInputLocked = false; break;
+	case EInputMode::UIOnly: SetInputMode(FInputModeUIOnly()); IsInputLocked = true; break;
 	}
 }

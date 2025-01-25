@@ -7,6 +7,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "Net/UnrealNetwork.h"
 
+#include "BubbleController.h"
 #include "GAS/BubbleAttributeSet.h"
 
 void APaintableItem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -14,7 +15,7 @@ void APaintableItem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME_CONDITION_NOTIFY(APaintableItem, Cleanness, COND_None, REPNOTIFY_Always);
-	//DOREPLIFETIME_CONDITION_NOTIFY(APaintableItem, IsLocked, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(APaintableItem, IsLocked, COND_None, REPNOTIFY_Always);
 }
 
 APaintableItem::APaintableItem()
@@ -75,21 +76,15 @@ void APaintableItem::ProgressCleaning()
 
 	if ((bCanInteract(InteractingPlayer)==false ) || Iterations<=0)
 	{
-		//IsLocked = false;
-		InteractingPlayer->IsLocalPlayerController() ? StopInteraction() : Client_StopInteracting();
+		IsLocked = false;
+		StopInteraction();
 	}
-}
-
-void APaintableItem::Client_StopInteracting_Implementation()
-{
-	UE_LOG(LogTemp, Warning, TEXT("PRASHTAM RPC"));
-	StopInteraction();
 }
 
 void APaintableItem::StopInteraction()
 {
 	UE_LOG(LogTemp, Warning, TEXT("POLUCHAVAM RPC????"));
-	InteractingPlayer->SetInputMode(FInputModeGameOnly());
+	InteractingPlayer->Client_SetInputMode(EInputMode::GameOnly);
 	InteractingPlayer = nullptr;
 	GetWorldTimerManager().ClearTimer(CleaningPeriodTimer);
 	CleaningPeriodTimer.Invalidate();
@@ -100,15 +95,16 @@ void APaintableItem::StopInteraction()
 void APaintableItem::InteractRequest(AController* InteractingCharacter)
 {
 
-	InteractingPlayer = Cast<APlayerController>(InteractingCharacter);
-	InteractingPlayer->SetInputMode(FInputModeUIOnly());
-	
 	if (HasAuthority() == false)
 	{
 		return;
 	}
+
+	InteractingPlayer = Cast<ABubbleController>(InteractingCharacter);
+	InteractingPlayer->Client_SetInputMode(EInputMode::UIOnly);
+
 	//SetOwner(InteractingPlayer);
-	//IsLocked = true;
+	IsLocked = true;
 	UE_LOG(LogTemp, Warning, TEXT("Starting Clean - Cleanness: %d Step:%d"), Cleanness, Iterations);
 	
 
@@ -120,7 +116,7 @@ void APaintableItem::InteractRequest(AController* InteractingCharacter)
 
 bool APaintableItem::bCanInteract(AController* InteractingCharacter)
 {
-	//if (IsLocked) return false;
+	if (IsLocked) return false;
 
 	UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(InteractingCharacter->GetPawn());
 
