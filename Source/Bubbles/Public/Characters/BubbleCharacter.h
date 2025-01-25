@@ -46,6 +46,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Debug")
 	bool bShouldDrawDebug = true;
 
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "GAS|CharacterDefaults")
+	TArray<TSubclassOf<class UGameplayAbility>> DefaultAbilities;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "GAS|CharacterDefaults")
+	TSubclassOf<class UGameplayEffect> DefaultAttributeEffect;
+
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "GAS", meta = (AllowPrivateAccess = "true"))
 	UAbilitySystemComponent* AbilitySystemComponent;
 
@@ -71,11 +78,17 @@ protected:
 
 	virtual void EmitInteractionChecker();
 
-	void CheckForInteractables(FHitResult HitResult);
+	bool CheckForInteractables(FHitResult HitResult);
 
 	void TriggerInteraction();
 
 public:
+
+	virtual void PossessedBy(AController* NewController) override;
+
+	virtual void OnRep_PlayerState() override;
+
+	void InitCharacterDefaults();
 
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -83,6 +96,9 @@ public:
 	/** Called for movement input */
 	UFUNCTION()
 	virtual void Move(const FInputActionValue& Value);
+
+
+	UObject* GetFocusedInteractableObject() { return FocusedInteractableObject; }
 
 	FTextTransferSignature InteractIndicationTextDelegate;
 };

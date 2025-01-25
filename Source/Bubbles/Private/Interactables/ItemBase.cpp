@@ -17,6 +17,7 @@ AItemBase::AItemBase()
 
 void AItemBase::InteractRequest(AController* InteractingCharacter)
 {
+	UE_LOG(LogTemp, Display, TEXT("Interacted with: %s"), *ItemName.ToString());
 }
 
 bool AItemBase::bCanInteract(AController* InteractingCharacter)

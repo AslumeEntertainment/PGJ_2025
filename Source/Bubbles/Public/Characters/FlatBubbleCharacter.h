@@ -12,7 +12,7 @@ UCLASS()
 class BUBBLES_API AFlatBubbleCharacter : public ABubbleCharacter
 {
 	GENERATED_BODY()
-	
+
 public:
 
 	AFlatBubbleCharacter();
