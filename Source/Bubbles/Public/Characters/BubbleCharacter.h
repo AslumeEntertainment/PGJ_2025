@@ -14,6 +14,9 @@
 class UMaterialInterface;
 class UAbilitySystemComponent;
 class UBubbleAttributeSet;
+class UInputMappingContext;
+class UInputAction;
+struct FInputActionValue;
 
 UCLASS(Abstract)
 class BUBBLES_API ABubbleCharacter : public ACharacter
@@ -49,6 +52,18 @@ protected:
 	UPROPERTY(Transient)
 	UBubbleAttributeSet* AttributeSet;
 
+	/** MappingContext */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputMappingContext* DefaultMappingContext;
+
+	/** Jump Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* JumpAction;
+
+	/** Move Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* MoveAction;
+
 	UFUNCTION(Server, Reliable)
 	void Server_SetFocusedInteractable(UObject* InFocusedInteractable);
 
@@ -58,13 +73,16 @@ protected:
 
 	void CheckForInteractables(FHitResult HitResult);
 
-
 	void TriggerInteraction();
 
 public:
 
-	// Called to bind functionality to input
+	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	FTextTransferSignature InteractIndicationTextDelegate;
 
+	/** Called for movement input */
+	UFUNCTION()
+	virtual void Move(const FInputActionValue& Value);
+
+	FTextTransferSignature InteractIndicationTextDelegate;
 };
