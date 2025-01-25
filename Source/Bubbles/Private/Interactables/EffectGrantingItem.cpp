@@ -6,6 +6,11 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
 
+AEffectGrantingItem::AEffectGrantingItem()
+{
+	bReplicates = true;
+}
+
 void AEffectGrantingItem::InteractRequest(AController* InteractingCharacter)
 {
 	if (HasAuthority() == false)

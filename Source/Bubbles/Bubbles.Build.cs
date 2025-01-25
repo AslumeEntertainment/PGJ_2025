@@ -18,6 +18,7 @@ public class Bubbles : ModuleRules
                 "Engine",
                 "Slate",
                 "SlateCore",
+                "UMG",
                 "InputCore",
                 "GameplayAbilities",
                 "GameplayTags",
