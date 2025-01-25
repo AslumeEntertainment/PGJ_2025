@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "CollectableItemSpawner.h"
+#include "Managers/CollectableItemSpawner.h"
 
 #include "Interactables/EffectGrantingItem.h"
 
@@ -35,14 +35,17 @@ void ACollectableItemSpawner::BeginPlay()
 	}
 	int ItemPairsToSpawn = FMath::RandRange(0, NumSpawnPoints / NumItemVariations);
 
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
 	for (int i = 0; i < ItemPairsToSpawn; i++)
 	{
 		for (int j = 0; j < NumItemVariations; j++)
 		{
 			int RandIndex = FMath::RandRange(0, SpawnPoints.Num()-1);
 
-			FActorSpawnParameters Params;
-			World->SpawnActor<AEffectGrantingItem>(SpawnableItems[j], SpawnPoints[RandIndex], ItemOrientation, FActorSpawnParameters());
+			
+			World->SpawnActor<AEffectGrantingItem>(SpawnableItems[j], SpawnPoints[RandIndex], ItemOrientation, Params);
 
 			SpawnPoints.RemoveAt(RandIndex);
 		}
