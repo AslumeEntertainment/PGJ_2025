@@ -3,9 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
-#include "Logging/LogMacros.h"
-#include "BubblesCharacter.generated.h"
+#include "Characters/BubbleCharacter.h"
+//#include "Logging/LogMacros.h"
+#include "HumanBubble.generated.h"
 
 class USpringArmComponent;
 class UCameraComponent;
@@ -13,10 +13,10 @@ class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
 
-DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
+//DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class ABubblesCharacter : public ACharacter
+class AHumanBubble : public ABubbleCharacter
 {
 	GENERATED_BODY()
 
@@ -32,10 +32,11 @@ class ABubblesCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
-public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* InteractAction;
 
-	ABubblesCharacter();
-	
+public:
+	AHumanBubble();
 
 protected:
 
@@ -47,9 +48,15 @@ protected:
 protected:
 	
 	// To add mapping context
-	virtual void BeginPlay();
+	virtual void Tick(float DeltaTime) override;
+
+	virtual void EmitInteractionChecker() override;
 
 public:
+
+	// APawn interface
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/

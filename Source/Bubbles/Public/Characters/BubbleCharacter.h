@@ -4,14 +4,23 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+
+#include "AbilitySystemInterface.h"
+#include "GameplayTagContainer.h"
+
+#include "Headers/GeneralDelegates.h"
+
 #include "BubbleCharacter.generated.h"
 
+class UMaterialInterface;
+class UAbilitySystemComponent;
+class UBubbleAttributeSet;
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
 
 UCLASS(Abstract)
-class BUBBLES_API ABubbleCharacter : public ACharacter
+class BUBBLES_API ABubbleCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -24,21 +33,32 @@ private:
 	UPROPERTY(Replicated)
 	UObject* FocusedInteractableObject = nullptr;
 
-	UFUNCTION(Server, Reliable)
-	void Server_SetFocusedInteractable(UObject* InFocusedInteractable);
-
-	void SetFocusedInteractable(UObject* InFocusedInteractable);
-
-	virtual void EmitInteractionChecker();
-	
-	void CheckForInteractables(FHitResult HitResult);
-
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
 
-	// APawn interface
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	UPROPERTY(EditDefaultsOnly, Category = "Interaction")
+	UMaterialInterface* InteractableOverlayMaterial;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Interaction")
+	float InteractionRange = 100;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Interaction")
+	FGameplayTag InteractionAbilityTag;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Debug")
+	bool bShouldDrawDebug = true;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "GAS|CharacterDefaults")
+	TArray<TSubclassOf<class UGameplayAbility>> DefaultAbilities;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "GAS|CharacterDefaults")
+	TSubclassOf<class UGameplayEffect> DefaultAttributeEffect;
+
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "GAS", meta = (AllowPrivateAccess = "true"))
+	UAbilitySystemComponent* AbilitySystemComponent;
+
+	UPROPERTY(Transient)
+	UBubbleAttributeSet* AttributeSet;
 
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -52,12 +72,35 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* MoveAction;
 
+	UFUNCTION(Server, Reliable)
+	void Server_SetFocusedInteractable(UObject* InFocusedInteractable);
+
+	void SetFocusedInteractable(UObject* InFocusedInteractable);
+
+	virtual void EmitInteractionChecker();
+
+	bool CheckForInteractables(FHitResult HitResult);
+
+	void TriggerInteraction();
+
+public:
+
+	virtual void PossessedBy(AController* NewController) override;
+
+	virtual void OnRep_PlayerState() override;
+
+	void InitCharacterDefaults();
+
+	// APawn interface
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
 	/** Called for movement input */
 	UFUNCTION()
 	virtual void Move(const FInputActionValue& Value);
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	virtual class UAbilitySystemComponent* GetAbilitySystemComponent() const override { return AbilitySystemComponent; };
 
+	UObject* GetFocusedInteractableObject() { return FocusedInteractableObject; }
+
+	FTextTransferSignature InteractIndicationTextDelegate;
 };
