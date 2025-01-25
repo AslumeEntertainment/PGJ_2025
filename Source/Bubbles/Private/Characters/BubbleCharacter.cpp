@@ -138,6 +138,10 @@ void ABubbleCharacter::OnRep_PlayerState()
 
 void ABubbleCharacter::InitCharacterDefaults()
 {
+	if (bHasBeenInited)
+	{
+		return;
+	}
 	if (IsValid(AbilitySystemComponent) == false)
 	{
 		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::InitCharacterDefaults IsValid(AbilitySystemComponent) == false"));
@@ -150,7 +154,6 @@ void ABubbleCharacter::InitCharacterDefaults()
 
 		if (const UGameplayAbility* Ability = Cast<UGameplayAbility>(Spec.Ability))
 		{
-			//Spec.DynamicAbilityTags.AddTag(Ability->InputTag);
 			AbilitySystemComponent->GiveAbility(Spec);
 		}
 	}
@@ -172,6 +175,8 @@ void ABubbleCharacter::InitCharacterDefaults()
 	{
 		GEHandle = AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
 	}
+
+	bHasBeenInited = true;
 }
 
 void ABubbleCharacter::Move(const FInputActionValue& Value)
@@ -179,10 +184,8 @@ void ABubbleCharacter::Move(const FInputActionValue& Value)
 	UE_LOG(LogTemp, Warning, TEXT("Object has not implemented Move"));
 }
 
-// Called to bind functionality to input
 void ABubbleCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	// Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
@@ -191,20 +194,31 @@ void ABubbleCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		}
 	}
 
-	// Set up action bindings
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-
-		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-
-		// Moving
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) 
+	{
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABubbleCharacter::Move);
 	}
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+}
 
+void ABubbleCharacter::UnbindAllInputBindings()
+{
+	APlayerController* PlayerCont = Cast<APlayerController>(GetController());
+	if (IsValid(PlayerCont) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::UnbindAllInputBindings IsValid(PlayerCont) == false"));
+		return;
+	}
+	UEnhancedInputLocalPlayerSubsystem* InputSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerCont->GetLocalPlayer());
+	if (IsValid(InputSystem) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::UnbindAllInputBindings IsValid(InputSystem) == false"));
+		return;
+	}
+
+	InputSystem->ClearAllMappings();
 }
 
