@@ -3,7 +3,7 @@
 
 #include "Characters/BubbleCharacter.h"
 
-
+#include "BubbleController.h"
 #include "Interactables/Interactable.h"
 
 #include "GAS/BubbleAttributeSet.h"
@@ -57,8 +57,20 @@ void ABubbleCharacter::EmitInteractionChecker()
 
 bool ABubbleCharacter::CheckForInteractables(FHitResult HitResult)
 {
-	//APlayerController* PC = Cast<APlayerController>(GetController());
-	//if(PC!= nullptr && PC->GetInput)
+	ABubbleController* PC = Cast<ABubbleController>(GetController());
+	if (PC->IsInputLocked)
+	{
+		if (FocusedInteractableObject != nullptr)
+		{
+			UActorComponent* InteractableMeshComponent = Cast<AActor>(FocusedInteractableObject)->GetComponentByClass(UMeshComponent::StaticClass());
+			if (Cast<UMeshComponent>(InteractableMeshComponent))
+			{
+				Cast<UMeshComponent>(InteractableMeshComponent)->SetOverlayMaterial(nullptr);
+			}
+		}
+		Server_SetFocusedInteractable(nullptr);
+		return false;
+	}
 
 	AActor* HitActor = HitResult.GetActor();
 	UPrimitiveComponent* HitComponent = HitResult.GetComponent();

@@ -18,12 +18,13 @@ public class Bubbles : ModuleRules
                 "Engine",
                 "Slate",
                 "SlateCore",
+                "UMG",
                 "InputCore",
                 "GameplayAbilities",
                 "GameplayTags",
                 "GameplayTasks",
                 "UMG"
-				// ... add private dependencies that you statically link with here ...	
+
 			}
             );
 
