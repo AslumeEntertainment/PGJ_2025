@@ -10,5 +10,21 @@ public class Bubbles : ModuleRules
         DynamicallyLoadedModuleNames.Add("OnlineSubsystemNull");
 
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
-	}
+
+        PrivateDependencyModuleNames.AddRange(
+            new string[]
+            {
+                "CoreUObject",
+                "Engine",
+                "Slate",
+                "SlateCore",
+                "InputCore",
+                "GameplayAbilities",
+                "GameplayTags",
+                "GameplayTasks"
+				// ... add private dependencies that you statically link with here ...	
+			}
+            );
+
+    }
 }

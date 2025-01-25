@@ -5,6 +5,8 @@
 
 #include "Interactables/Interactable.h"
 
+#include "AttributeSet.h"
+#include "AbilitySystemComponent.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values
@@ -89,6 +91,12 @@ void ABubbleCharacter::CheckForInteractables(FHitResult HitResult)
 
 	InteractIndicationTextDelegate.Broadcast(FText::FromString("E " + InteractableActor->GetInteractableName().ToString()));
 	Server_SetFocusedInteractable(HitActor);
+}
+
+void ABubbleCharacter::TriggerInteraction()
+{
+	FGameplayEventData Data = FGameplayEventData();
+	AbilitySystemComponent->HandleGameplayEvent(InteractionAbilityTag, &Data);
 }
 
 // Called to bind functionality to input

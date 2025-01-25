@@ -5,11 +5,15 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 
+#include "GameplayTagContainer.h"
+
 #include "Headers/GeneralDelegates.h"
 
 #include "BubbleCharacter.generated.h"
 
 class UMaterialInterface;
+class UAbilitySystemComponent;
+class UBubbleAttributeSet;
 
 UCLASS(Abstract)
 class BUBBLES_API ABubbleCharacter : public ACharacter
@@ -33,8 +37,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Interaction")
 	float InteractionRange = 100;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Interaction")
+	FGameplayTag InteractionAbilityTag;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Debug")
 	bool bShouldDrawDebug = true;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "GAS", meta = (AllowPrivateAccess = "true"))
+	UAbilitySystemComponent* AbilitySystemComponent;
+
+	UPROPERTY(Transient)
+	UBubbleAttributeSet* AttributeSet;
 
 	UFUNCTION(Server, Reliable)
 	void Server_SetFocusedInteractable(UObject* InFocusedInteractable);
@@ -44,6 +57,9 @@ protected:
 	virtual void EmitInteractionChecker();
 
 	void CheckForInteractables(FHitResult HitResult);
+
+
+	void TriggerInteraction();
 
 public:
 
