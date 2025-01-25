@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 
+#include "AbilitySystemInterface.h"
 #include "GameplayTagContainer.h"
 
 #include "Headers/GeneralDelegates.h"
@@ -19,7 +20,7 @@ class UInputAction;
 struct FInputActionValue;
 
 UCLASS(Abstract)
-class BUBBLES_API ABubbleCharacter : public ACharacter
+class BUBBLES_API ABubbleCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -97,6 +98,7 @@ public:
 	UFUNCTION()
 	virtual void Move(const FInputActionValue& Value);
 
+	virtual class UAbilitySystemComponent* GetAbilitySystemComponent() const override { return AbilitySystemComponent; };
 
 	UObject* GetFocusedInteractableObject() { return FocusedInteractableObject; }
 
