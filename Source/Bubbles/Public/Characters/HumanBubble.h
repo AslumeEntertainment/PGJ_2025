@@ -3,9 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
-#include "Logging/LogMacros.h"
-#include "BubblesCharacter.generated.h"
+#include "Characters/BubbleCharacter.h"
+//#include "Logging/LogMacros.h"
+#include "HumanBubble.generated.h"
 
 class USpringArmComponent;
 class UCameraComponent;
@@ -13,10 +13,10 @@ class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
 
-DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
+//DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class ABubblesCharacter : public ACharacter
+class AHumanBubble : public ABubbleCharacter
 {
 	GENERATED_BODY()
 
@@ -45,7 +45,7 @@ class ABubblesCharacter : public ACharacter
 	UInputAction* LookAction;
 
 public:
-	ABubblesCharacter();
+	AHumanBubble();
 	
 
 protected:

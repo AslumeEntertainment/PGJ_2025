@@ -3,6 +3,8 @@
 
 #include "Characters/BubbleCharacter.h"
 
+#include "Interactables/Interactable.h"
+
 #include "Net/UnrealNetwork.h"
 
 // Sets default values
@@ -42,9 +44,9 @@ void ABubbleCharacter::EmitInteractionChecker()
 
 void ABubbleCharacter::CheckForInteractables(FHitResult HitResult)
 {
-	/*AActor* HitActor = HitResult.GetActor();
+	AActor* HitActor = HitResult.GetActor();
 	UPrimitiveComponent* HitComponent = HitResult.GetComponent();
-	IInteractableInterface* InteractableActor = Cast<IInteractableInterface>(HitActor);
+	IInteractable* InteractableActor = Cast<IInteractable>(HitActor);
 
 	if (FocusedInteractableObject == HitActor)
 	{
@@ -86,7 +88,7 @@ void ABubbleCharacter::CheckForInteractables(FHitResult HitResult)
 	}
 
 	InteractIndicationTextDelegate.Broadcast(FText::FromString("E " + InteractableActor->GetInteractableName().ToString()));
-	Server_SetFocusedInteractable(HitActor);*/
+	Server_SetFocusedInteractable(HitActor);
 }
 
 // Called when the game starts or when spawned

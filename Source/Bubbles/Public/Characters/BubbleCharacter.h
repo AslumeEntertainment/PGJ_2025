@@ -4,7 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+
+#include "Headers/GeneralDelegates.h"
+
 #include "BubbleCharacter.generated.h"
+
+class UMaterialInterface;
 
 UCLASS(Abstract)
 class BUBBLES_API ABubbleCharacter : public ACharacter
@@ -30,6 +35,10 @@ private:
 	void CheckForInteractables(FHitResult HitResult);
 
 protected:
+
+	UPROPERTY(EditDefaultsOnly, Category = "Interaction")
+	UMaterialInterface* InteractableOverlayMaterial;
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -39,5 +48,6 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	FTextTransferSignature InteractIndicationTextDelegate;
 
 };
