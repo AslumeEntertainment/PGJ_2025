@@ -21,7 +21,8 @@ public class Bubbles : ModuleRules
                 "InputCore",
                 "GameplayAbilities",
                 "GameplayTags",
-                "GameplayTasks"
+                "GameplayTasks",
+                "UMG"
 				// ... add private dependencies that you statically link with here ...	
 			}
             );
