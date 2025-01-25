@@ -18,13 +18,20 @@ void APaintableItem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 
 void APaintableItem::SetCleanness(int NewValue, bool bCanBypass)
 {
+	int PrevCleanness = Cleanness;
+	
+	Cleanness = NewValue;
 
-	Cleanness = FMath::Clamp(NewValue, -MaxCleanness, MaxCleanness);
-
-	if ( FMath::Abs(Cleanness) == MaxCleanness)
+	if (FMath::Abs(PrevCleanness) < FMath::Abs(Cleanness))
 	{
-		Cleanness += FMath::Sign(Cleanness) * CleannessShield;
+		Cleanness = FMath::Clamp(NewValue, -MaxCleanness, MaxCleanness);
+		if (FMath::Abs(Cleanness) == MaxCleanness)
+		{
+			Cleanness += FMath::Sign(Cleanness) * CleannessShield;
+		}
 	}
+
+	
 
 	UpdateTexture();
 }
@@ -60,7 +67,7 @@ void APaintableItem::ProgressCleaning()
 	SetCleanness(Cleanness + AttributeSet->GetEffectiveness());
 	UE_LOG(LogTemp, Warning, TEXT("Cleaning - Cleanness: %d  Step:%d"), Cleanness, Iterations);
 
-	if (FMath::Abs(Cleanness) >= MaxCleanness || Iterations<=0)
+	if ((bCanInteract(InteractingPlayer)==false ) || Iterations<=0)
 	{
 		InteractingPlayer->IsLocalPlayerController() ? StopInteraction() : Client_StopInteracting();
 	}
@@ -112,7 +119,8 @@ bool APaintableItem::bCanInteract(AController* InteractingCharacter)
 
 	const UBubbleAttributeSet* AttributeSet = Cast<UBubbleAttributeSet>(ASC->GetAttributeSet(UBubbleAttributeSet::StaticClass()));
 
-	
+	if (AttributeSet->GetEffectiveness() == 0) return false;
+
 	return !(FMath::Abs(Cleanness) >= MaxCleanness && FMath::Sign(AttributeSet->GetEffectiveness()) == FMath::Sign(Cleanness));
 }
 

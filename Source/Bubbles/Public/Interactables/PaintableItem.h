@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Interactables/ItemBase.h"
+#include "Headers/GeneralDelegates.h"	
 #include "PaintableItem.generated.h"
 
 /**
@@ -57,4 +58,6 @@ protected:
 	virtual void InteractRequest(AController* InteractingCharacter) override;
 
 	virtual bool bCanInteract(AController* InteractingCharacter) override;
+
+	FIntegerTransferSignature OnCleannessUpdated;
 };
