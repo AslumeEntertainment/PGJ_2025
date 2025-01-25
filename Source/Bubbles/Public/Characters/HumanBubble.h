@@ -62,7 +62,9 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
 	// To add mapping context
-	virtual void BeginPlay();
+	virtual void Tick(float DeltaTime) override;
+
+	virtual void EmitInteractionChecker() override;
 
 public:
 	/** Returns CameraBoom subobject **/

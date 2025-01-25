@@ -52,12 +52,50 @@ AHumanBubble::AHumanBubble()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
+
+	PrimaryActorTick.bCanEverTick = true;
 }
 
-void AHumanBubble::BeginPlay()
+void AHumanBubble::Tick(float DeltaTime)
 {
 	// Call the base class  
-	Super::BeginPlay();
+	Super::Tick(DeltaTime);
+
+	if (IsLocallyControlled() == false)
+	{
+		return;
+	}
+
+	EmitInteractionChecker();
+}
+
+void AHumanBubble::EmitInteractionChecker()
+{
+	FVector StartTrace = FollowCamera->GetComponentLocation();
+	FVector EndTrace = FollowCamera->GetForwardVector() * InteractionRange + StartTrace;
+
+	const FName TraceTag("InteractableTraceTag");
+
+	UWorld* World = GetWorld();
+	if (IsValid(World) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AHumanBubble::EmitInteractionChecker IsValid(World) == false"));
+		return;
+	}
+
+	FHitResult HitResult;
+	FCollisionQueryParams CQP;
+	CQP.AddIgnoredActor(this);
+	CQP.TraceTag = TraceTag;
+
+	if (bShouldDrawDebug)
+	{
+		World->DebugDrawTraceTag = TraceTag;
+	}
+	World->LineTraceSingleByChannel(HitResult, StartTrace, EndTrace, ECC_GameTraceChannel1, CQP);
+
+	CheckForInteractables(HitResult);
 }
 
 //////////////////////////////////////////////////////////////////////////

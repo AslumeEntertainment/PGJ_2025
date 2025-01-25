@@ -25,26 +25,27 @@ private:
 	UPROPERTY(Replicated)
 	UObject* FocusedInteractableObject = nullptr;
 
+protected:
+
+	UPROPERTY(EditDefaultsOnly, Category = "Interaction")
+	UMaterialInterface* InteractableOverlayMaterial;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Interaction")
+	float InteractionRange = 100;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Debug")
+	bool bShouldDrawDebug = true;
+
 	UFUNCTION(Server, Reliable)
 	void Server_SetFocusedInteractable(UObject* InFocusedInteractable);
 
 	void SetFocusedInteractable(UObject* InFocusedInteractable);
 
 	virtual void EmitInteractionChecker();
-	
+
 	void CheckForInteractables(FHitResult HitResult);
 
-protected:
-
-	UPROPERTY(EditDefaultsOnly, Category = "Interaction")
-	UMaterialInterface* InteractableOverlayMaterial;
-
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
