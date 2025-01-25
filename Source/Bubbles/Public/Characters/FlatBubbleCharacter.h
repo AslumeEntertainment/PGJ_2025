@@ -7,6 +7,7 @@
 #include "FlatBubbleCharacter.generated.h"
 
 class UCapsuleComponent;
+class AHumanBubble;
 
 UCLASS()
 class BUBBLES_API AFlatBubbleCharacter : public ABubbleCharacter
@@ -23,11 +24,17 @@ protected:
 	UCapsuleComponent* InteractionCapsule;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* MoveAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* JumpAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* CrouchAction;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	virtual void Move(const FInputActionValue& Value) override;
+	virtual void Move(const FInputActionValue& Value) /*override*/;
 
 	void StartCrouch();
 
@@ -35,4 +42,10 @@ protected:
 
 	UFUNCTION()
 	void OnInteractionCapsuleBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+public:
+
+	UPROPERTY()
+	AHumanBubble* HumanBubbleOwner = nullptr;
+
 };

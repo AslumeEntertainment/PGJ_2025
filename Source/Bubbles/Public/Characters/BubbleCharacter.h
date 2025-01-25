@@ -30,6 +30,8 @@ public:
 
 private:
 
+	bool bHasBeenInited = false;
+
 	UPROPERTY(Replicated)
 	UObject* FocusedInteractableObject = nullptr;
 
@@ -53,7 +55,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "GAS|CharacterDefaults")
 	TSubclassOf<class UGameplayEffect> DefaultAttributeEffect;
 
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "GAS", meta = (AllowPrivateAccess = "true"))
 	UAbilitySystemComponent* AbilitySystemComponent;
 
@@ -64,13 +65,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext;
 
-	/** Jump Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* JumpAction;
-
-	/** Move Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* MoveAction;
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	//UInputAction* MoveAction;
 
 	UFUNCTION(Server, Reliable)
 	void Server_SetFocusedInteractable(UObject* InFocusedInteractable);
@@ -91,12 +87,12 @@ public:
 
 	void InitCharacterDefaults();
 
-	// APawn interface
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	//virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	/** Called for movement input */
-	UFUNCTION()
-	virtual void Move(const FInputActionValue& Value);
+	void UnbindAllInputBindings();
+
+	//UFUNCTION()
+	//virtual void Move(const FInputActionValue& Value);
 
 	virtual class UAbilitySystemComponent* GetAbilitySystemComponent() const override { return AbilitySystemComponent; };
 

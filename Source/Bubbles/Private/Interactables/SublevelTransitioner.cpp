@@ -4,19 +4,34 @@
 #include "Interactables/SublevelTransitioner.h"
 
 #include "GameFramework/PlayerController.h"
+#include "AbilitySystemComponent.h"
+#include "GAS/BubbleAttributeSet.h"
 #include "Camera/CameraActor.h"
 
 #include "Characters/FlatBubbleCharacter.h"
+#include "Characters/HumanBubble.h"
 #include "UI/HUD/InGameHUD.h"
 
 void ASublevelTransitioner::InteractRequest(AController* InteractingCharacter)
 {
 	//play anim
 
+	if (HasAuthority() == false)
+	{
+		return;
+	}
+
 	UWorld* World = GetWorld();
 	if (IsValid(World) == false)
 	{
 		UE_LOG(LogTemp, Error, TEXT("ASublevelTransitioner::InteractRequest IsValid(World) == false"));
+		return;
+	}
+
+	AHumanBubble* PlayerPawn = Cast<AHumanBubble>(InteractingCharacter->GetPawn());
+	if(IsValid(PlayerPawn) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ASublevelTransitioner::InteractRequest IsValid(PlayerPawn) == false"));
 		return;
 	}
 
@@ -36,11 +51,20 @@ void ASublevelTransitioner::InteractRequest(AController* InteractingCharacter)
 		UE_LOG(LogTemp, Error, TEXT("ASublevelTransitioner::InteractRequest IsValid(FlatBubble) == false"));
 		return;
 	}
+	
+	float CurrentEffectiveness = PlayerPawn->GetAbilitySystemComponent()->GetNumericAttributeBase(UBubbleAttributeSet::GetEffectivenessAttribute());
+	FlatBubble->GetAbilitySystemComponent()->SetNumericAttributeBase(UBubbleAttributeSet::GetEffectivenessAttribute(), CurrentEffectiveness);
+	FlatBubble->HumanBubbleOwner = PlayerPawn;
 
+	PlayerPawn->UnbindAllInputBindings();
 	PlayerCont->Possess(FlatBubble);
 	PlayerCont->SetViewTargetWithBlend(SublevelCamera);
 
-
+	AInGameHUD* HUD = Cast<AInGameHUD>(PlayerCont->GetHUD());
+	if (IsValid(HUD))
+	{
+		HUD->ToggleInteractionWidget(false);
+	}
 }
 
 bool ASublevelTransitioner::bCanInteract(AController* InteractingCharacter)
