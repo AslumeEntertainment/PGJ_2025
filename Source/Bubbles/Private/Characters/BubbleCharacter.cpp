@@ -3,18 +3,29 @@
 
 #include "Characters/BubbleCharacter.h"
 
+
+#include "Interactables/Interactable.h"
+
+#include "GAS/BubbleAttributeSet.h"
+#include "AbilitySystemComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "AbilitySystemBlueprintLibrary.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values
 ABubbleCharacter::ABubbleCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
+	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	AbilitySystemComponent->SetIsReplicated(true);
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
+
+	AttributeSet = CreateDefaultSubobject<UBubbleAttributeSet>(TEXT("AttributeSet"));
 }
 
 void ABubbleCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -44,21 +55,21 @@ void ABubbleCharacter::EmitInteractionChecker()
 	UE_LOG(LogTemp, Warning, TEXT("Object has not implemented EmitInteractionChecker"));
 }
 
-void ABubbleCharacter::CheckForInteractables(FHitResult HitResult)
+bool ABubbleCharacter::CheckForInteractables(FHitResult HitResult)
 {
-	/*AActor* HitActor = HitResult.GetActor();
+	AActor* HitActor = HitResult.GetActor();
 	UPrimitiveComponent* HitComponent = HitResult.GetComponent();
-	IInteractableInterface* InteractableActor = Cast<IInteractableInterface>(HitActor);
+	IInteractable* InteractableActor = Cast<IInteractable>(HitActor);
 
 	if (FocusedInteractableObject == HitActor)
 	{
-		return;
+		return true;
 	}
 	if (InteractableActor == nullptr)
 	{
 		if (FocusedInteractableObject == nullptr)
 		{
-			return;
+			return false;
 		}
 		UActorComponent* InteractableMeshComponent = Cast<AActor>(FocusedInteractableObject)->GetComponentByClass(UMeshComponent::StaticClass());
 		if (Cast<UMeshComponent>(InteractableMeshComponent))
@@ -68,11 +79,11 @@ void ABubbleCharacter::CheckForInteractables(FHitResult HitResult)
 
 		InteractIndicationTextDelegate.Broadcast(FText::FromString(""));
 		Server_SetFocusedInteractable(nullptr);
-		return;
+		return false;
 	}
 	if (!InteractableActor->bCanInteract(GetController()))
 	{
-		return;
+		return false;
 	}
 	if (FocusedInteractableObject != nullptr)
 	{
@@ -90,26 +101,67 @@ void ABubbleCharacter::CheckForInteractables(FHitResult HitResult)
 	}
 
 	InteractIndicationTextDelegate.Broadcast(FText::FromString("E " + InteractableActor->GetInteractableName().ToString()));
-	Server_SetFocusedInteractable(HitActor);*/
+	Server_SetFocusedInteractable(HitActor);
+	return true;
 }
 
-// Called when the game starts or when spawned
-void ABubbleCharacter::BeginPlay()
+void ABubbleCharacter::TriggerInteraction()
 {
-	Super::BeginPlay();
-	
+	FGameplayEventData Data = FGameplayEventData();
+	AbilitySystemComponent->HandleGameplayEvent(InteractionAbilityTag, &Data);
+}
+
+void ABubbleCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	InitCharacterDefaults();
+}
+
+void ABubbleCharacter::OnRep_PlayerState()
+{
+}
+
+void ABubbleCharacter::InitCharacterDefaults()
+{
+	if (IsValid(AbilitySystemComponent) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::InitCharacterDefaults IsValid(AbilitySystemComponent) == false"));
+		return;
+	}
+
+	for (TSubclassOf<UGameplayAbility> AbilityClass : DefaultAbilities)
+	{
+		FGameplayAbilitySpec Spec = FGameplayAbilitySpec(AbilityClass, 0, INDEX_NONE, this);
+
+		if (const UGameplayAbility* Ability = Cast<UGameplayAbility>(Spec.Ability))
+		{
+			//Spec.DynamicAbilityTags.AddTag(Ability->InputTag);
+			AbilitySystemComponent->GiveAbility(Spec);
+		}
+	}
+
+	FActiveGameplayEffectHandle GEHandle;
+
+	if (IsValid(DefaultAttributeEffect) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("USG_AbilitySystemComponent::AddEffectFromClass IsValid(GameplayEffectClass) == false"));
+		return;
+	}
+
+	FGameplayEffectContextHandle EffectContext = AbilitySystemComponent->MakeEffectContext();
+	EffectContext.AddSourceObject(this);
+
+	FGameplayEffectSpecHandle EffectSpecHandle = AbilitySystemComponent->MakeOutgoingSpec(DefaultAttributeEffect, 0, EffectContext);
+
+	if (EffectSpecHandle.IsValid())
+	{
+		GEHandle = AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
+	}
 }
 
 void ABubbleCharacter::Move(const FInputActionValue& Value)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Object has not implemented Move"));
-}
-
-// Called every frame
-void ABubbleCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
 }
 
 // Called to bind functionality to input

@@ -47,4 +47,8 @@ void AFlatBubbleCharacter::StopCrouch()
 void AFlatBubbleCharacter::OnInteractionCapsuleBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Flat bubble has overlaped"));
+	if (CheckForInteractables(SweepResult))
+	{
+		TriggerInteraction();
+	}
 }

@@ -22,4 +22,10 @@ class BUBBLES_API IInteractable
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+
+	virtual void InteractRequest(AController* InteractingCharacter) = 0;
+
+	virtual bool bCanInteract(AController* InteractingCharacter) = 0;
+
+	virtual FText GetInteractableName() = 0;
 };

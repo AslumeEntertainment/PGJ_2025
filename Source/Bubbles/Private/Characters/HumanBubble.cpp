@@ -1,6 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "BubblesCharacter.h"
+#include "Characters/HumanBubble.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -11,12 +11,12 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 
-DEFINE_LOG_CATEGORY(LogTemplateCharacter);
+//DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 //////////////////////////////////////////////////////////////////////////
 // ABubblesCharacter
 
-ABubblesCharacter::ABubblesCharacter()
+AHumanBubble::AHumanBubble()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -52,16 +52,70 @@ ABubblesCharacter::ABubblesCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
+
+	PrimaryActorTick.bCanEverTick = true;
 }
 
-void ABubblesCharacter::BeginPlay()
+void AHumanBubble::Tick(float DeltaTime)
 {
 	// Call the base class  
-	Super::BeginPlay();
+	Super::Tick(DeltaTime);
+
+	if (IsLocallyControlled() == false)
+	{
+		return;
+	}
+
+	EmitInteractionChecker();
 }
 
+void AHumanBubble::EmitInteractionChecker()
+{
+	FVector StartTrace = FollowCamera->GetComponentLocation();
+	FVector EndTrace = FollowCamera->GetForwardVector() * InteractionRange + StartTrace;
 
-void ABubblesCharacter::Move(const FInputActionValue& Value)
+	const FName TraceTag("InteractableTraceTag");
+
+	UWorld* World = GetWorld();
+	if (IsValid(World) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AHumanBubble::EmitInteractionChecker IsValid(World) == false"));
+		return;
+	}
+
+	FHitResult HitResult;
+	FCollisionQueryParams CQP;
+	CQP.AddIgnoredActor(this);
+	CQP.TraceTag = TraceTag;
+
+	if (bShouldDrawDebug)
+	{
+		World->DebugDrawTraceTag = TraceTag;
+	}
+	World->LineTraceSingleByChannel(HitResult, StartTrace, EndTrace, ECC_GameTraceChannel1, CQP);
+
+	CheckForInteractables(HitResult);
+}
+
+void AHumanBubble::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	
+	// Set up action bindings
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
+		
+		// Looking
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &AHumanBubble::TriggerInteraction);
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AHumanBubble::Look);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
+	}
+}
+
+void AHumanBubble::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
@@ -84,7 +138,7 @@ void ABubblesCharacter::Move(const FInputActionValue& Value)
 	}
 }
 
-void ABubblesCharacter::Look(const FInputActionValue& Value)
+void AHumanBubble::Look(const FInputActionValue& Value)
 {
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
