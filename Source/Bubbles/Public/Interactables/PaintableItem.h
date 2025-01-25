@@ -4,19 +4,22 @@
 
 #include "CoreMinimal.h"
 #include "Interactables/ItemBase.h"
+#include "Headers/GeneralDelegates.h"	
 #include "PaintableItem.generated.h"
 
-/**
- * 
- */
+class ABubbleController;
+
 UCLASS()
 class BUBBLES_API APaintableItem : public AItemBase
 {
 	GENERATED_BODY()
 	
+public:
+	APaintableItem();
+
 private:
 	UPROPERTY()
-	APlayerController* InteractingPlayer;
+	ABubbleController* InteractingPlayer;
 
 	UPROPERTY()
 	int Iterations = 0;
@@ -33,10 +36,16 @@ protected:
 	int CleannessShield = 2;
 
 	UPROPERTY(EditAnywhere)
+	int PointMultiplier = 2;
+
+	UPROPERTY(EditAnywhere)
 	float CleaningTime = 5;
 
 	UPROPERTY(EditAnywhere)
 	float CleaningInterval = 1;
+
+	UPROPERTY(Replicated)
+	bool IsLocked = false;
 
 	FTimerHandle CleaningPeriodTimer;
 
@@ -49,12 +58,15 @@ protected:
 
 	void ProgressCleaning();
 
-	UFUNCTION(Client, Reliable)
-	void Client_StopInteracting();
-
 	void StopInteraction();
 
 	virtual void InteractRequest(AController* InteractingCharacter) override;
 
 	virtual bool bCanInteract(AController* InteractingCharacter) override;
+public:
+	int GetNetWorth();
+	int GetActualPoints();
+
+
+	FVoidDataTransferSignature OnCleannessUpdated;
 };

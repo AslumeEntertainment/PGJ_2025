@@ -7,6 +7,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "Net/UnrealNetwork.h"
 
+#include "BubbleController.h"
 #include "GAS/BubbleAttributeSet.h"
 
 void APaintableItem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -14,17 +15,30 @@ void APaintableItem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME_CONDITION_NOTIFY(APaintableItem, Cleanness, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(APaintableItem, IsLocked, COND_None, REPNOTIFY_Always);
+}
+
+APaintableItem::APaintableItem()
+{
+	bReplicates = true;
 }
 
 void APaintableItem::SetCleanness(int NewValue, bool bCanBypass)
 {
+	int PrevCleanness = Cleanness;
+	
+	Cleanness = NewValue;
 
-	Cleanness = FMath::Clamp(NewValue, -MaxCleanness, MaxCleanness);
-
-	if ( FMath::Abs(Cleanness) == MaxCleanness)
+	if (FMath::Abs(PrevCleanness) < FMath::Abs(Cleanness))
 	{
-		Cleanness += FMath::Sign(Cleanness) * CleannessShield;
+		Cleanness = FMath::Clamp(NewValue, -MaxCleanness, MaxCleanness);
+		if (FMath::Abs(Cleanness) == MaxCleanness)
+		{
+			Cleanness += FMath::Sign(Cleanness) * CleannessShield;
+		}
 	}
+
+	
 
 	UpdateTexture();
 }
@@ -60,20 +74,17 @@ void APaintableItem::ProgressCleaning()
 	SetCleanness(Cleanness + AttributeSet->GetEffectiveness());
 	UE_LOG(LogTemp, Warning, TEXT("Cleaning - Cleanness: %d  Step:%d"), Cleanness, Iterations);
 
-	if (FMath::Abs(Cleanness) >= MaxCleanness || Iterations<=0)
+	if ((bCanInteract(InteractingPlayer)==false ) || Iterations<=0)
 	{
-		InteractingPlayer->IsLocalPlayerController() ? StopInteraction() : Client_StopInteracting();
+		IsLocked = false;
+		StopInteraction();
 	}
-}
-
-void APaintableItem::Client_StopInteracting_Implementation()
-{
-	StopInteraction();
 }
 
 void APaintableItem::StopInteraction()
 {
-	InteractingPlayer->SetInputMode(FInputModeGameOnly());
+	UE_LOG(LogTemp, Warning, TEXT("POLUCHAVAM RPC????"));
+	InteractingPlayer->Client_SetInputMode(EInputMode::GameOnly);
 	InteractingPlayer = nullptr;
 	GetWorldTimerManager().ClearTimer(CleaningPeriodTimer);
 	CleaningPeriodTimer.Invalidate();
@@ -84,13 +95,16 @@ void APaintableItem::StopInteraction()
 void APaintableItem::InteractRequest(AController* InteractingCharacter)
 {
 
-	InteractingPlayer = Cast<APlayerController>(InteractingCharacter);
-	InteractingPlayer->SetInputMode(FInputModeUIOnly());
-
 	if (HasAuthority() == false)
 	{
 		return;
 	}
+
+	InteractingPlayer = Cast<ABubbleController>(InteractingCharacter);
+	InteractingPlayer->Client_SetInputMode(EInputMode::UIOnly);
+
+	//SetOwner(InteractingPlayer);
+	IsLocked = true;
 	UE_LOG(LogTemp, Warning, TEXT("Starting Clean - Cleanness: %d Step:%d"), Cleanness, Iterations);
 	
 
@@ -102,6 +116,8 @@ void APaintableItem::InteractRequest(AController* InteractingCharacter)
 
 bool APaintableItem::bCanInteract(AController* InteractingCharacter)
 {
+	if (IsLocked) return false;
+
 	UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(InteractingCharacter->GetPawn());
 
 	if (IsValid(ASC) == false)
@@ -112,7 +128,19 @@ bool APaintableItem::bCanInteract(AController* InteractingCharacter)
 
 	const UBubbleAttributeSet* AttributeSet = Cast<UBubbleAttributeSet>(ASC->GetAttributeSet(UBubbleAttributeSet::StaticClass()));
 
-	
+	if (AttributeSet->GetEffectiveness() == 0) return false;
+
 	return !(FMath::Abs(Cleanness) >= MaxCleanness && FMath::Sign(AttributeSet->GetEffectiveness()) == FMath::Sign(Cleanness));
+}
+
+int APaintableItem::GetNetWorth()
+{
+	return PointMultiplier;
+}
+
+int APaintableItem::GetActualPoints()
+{
+	if (FMath::Abs(Cleanness) < MaxCleanness) return 0;
+	return FMath::Sign(Cleanness) * PointMultiplier;
 }
 

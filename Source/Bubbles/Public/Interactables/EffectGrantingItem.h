@@ -14,6 +14,9 @@ class BUBBLES_API AEffectGrantingItem : public AItemBase
 {
 	GENERATED_BODY()
 	
+public:
+	AEffectGrantingItem();
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effects")
 	TArray<TSubclassOf<UGameplayEffect>> Effects;
