@@ -57,6 +57,9 @@ void ABubbleCharacter::EmitInteractionChecker()
 
 bool ABubbleCharacter::CheckForInteractables(FHitResult HitResult)
 {
+	//APlayerController* PC = Cast<APlayerController>(GetController());
+	//if(PC!= nullptr && PC->GetInput)
+
 	AActor* HitActor = HitResult.GetActor();
 	UPrimitiveComponent* HitComponent = HitResult.GetComponent();
 	IInteractable* InteractableActor = Cast<IInteractable>(HitActor);
