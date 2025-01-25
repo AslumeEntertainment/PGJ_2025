@@ -167,35 +167,30 @@ void ABubbleCharacter::InitCharacterDefaults()
 	bHasBeenInited = true;
 }
 
-//void ABubbleCharacter::Move(const FInputActionValue& Value)
-//{
-//	UE_LOG(LogTemp, Warning, TEXT("Object has not implemented Move"));
-//}
+void ABubbleCharacter::Move(const FInputActionValue& Value)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Object has not implemented Move"));
+}
 
-//void ABubbleCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-//{
-//	UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::SetupPlayerInputComponent"));
-//
-//	// Add Input Mapping Context
-//	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
-//	{
-//		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-//		{
-//			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-//		}
-//	}
-//
-//	// Set up action bindings
-//	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) 
-//	{
-//		EnhancedInputComponent->ClearActionBindings();
-//		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABubbleCharacter::Move);
-//	}
-//	else
-//	{
-//		UE_LOG(LogTemp, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
-//	}
-//}
+void ABubbleCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		}
+	}
+
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) 
+	{
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABubbleCharacter::Move);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
+	}
+}
 
 void ABubbleCharacter::UnbindAllInputBindings()
 {

@@ -51,14 +51,14 @@ void ASublevelTransitioner::InteractRequest(AController* InteractingCharacter)
 		UE_LOG(LogTemp, Error, TEXT("ASublevelTransitioner::InteractRequest IsValid(FlatBubble) == false"));
 		return;
 	}
-	
-	float CurrentEffectiveness = PlayerPawn->GetAbilitySystemComponent()->GetNumericAttributeBase(UBubbleAttributeSet::GetEffectivenessAttribute());
-	FlatBubble->GetAbilitySystemComponent()->SetNumericAttributeBase(UBubbleAttributeSet::GetEffectivenessAttribute(), CurrentEffectiveness);
-	FlatBubble->HumanBubbleOwner = PlayerPawn;
 
 	PlayerPawn->UnbindAllInputBindings();
 	PlayerCont->Possess(FlatBubble);
 	PlayerCont->SetViewTargetWithBlend(SublevelCamera);
+
+	float CurrentEffectiveness = PlayerPawn->GetAbilitySystemComponent()->GetNumericAttributeBase(UBubbleAttributeSet::GetEffectivenessAttribute());
+	FlatBubble->GetAbilitySystemComponent()->SetNumericAttributeBase(UBubbleAttributeSet::GetEffectivenessAttribute(), CurrentEffectiveness);
+	FlatBubble->HumanBubbleOwner = PlayerPawn;
 
 	AInGameHUD* HUD = Cast<AInGameHUD>(PlayerCont->GetHUD());
 	if (IsValid(HUD))

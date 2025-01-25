@@ -28,8 +28,8 @@ class AHumanBubble : public ABubbleCharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* MoveAction;
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	//UInputAction* MoveAction;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
@@ -42,7 +42,7 @@ public:
 
 protected:
 
-	virtual void Move(const FInputActionValue& Value) /*override*/;
+	virtual void Move(const FInputActionValue& Value) override;
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);	
