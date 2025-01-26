@@ -74,7 +74,7 @@ void APaintableItem::ProgressCleaning()
 	SetCleanness(Cleanness + AttributeSet->GetEffectiveness());
 	UE_LOG(LogTemp, Warning, TEXT("Cleaning - Cleanness: %d  Step:%d"), Cleanness, Iterations);
 
-	if ((bCanInteract(InteractingPlayer)==false ) || Iterations<=0)
+	if ((FMath::Abs(Cleanness) >= MaxCleanness && FMath::Sign(AttributeSet->GetEffectiveness()) == FMath::Sign(Cleanness)) || Iterations<=0)
 	{
 		IsLocked = false;
 		StopInteraction();
