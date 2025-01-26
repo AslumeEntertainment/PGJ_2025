@@ -21,3 +21,8 @@ void ABubbleController::Client_SetInputMode_Implementation(EInputMode  InputMode
 	case EInputMode::UIOnly: SetInputMode(FInputModeUIOnly()); IsInputLocked = true; break;
 	}
 }
+void ABubbleController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+	Client_SetInputMode(EInputMode::GameOnly);
+}

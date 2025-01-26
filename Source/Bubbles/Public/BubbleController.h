@@ -26,4 +26,6 @@ public:
 
 	UFUNCTION(Client, Reliable)
 	void Client_SetInputMode(EInputMode InputMode);
+
+	void OnPossess(APawn* InPawn) override;
 };
