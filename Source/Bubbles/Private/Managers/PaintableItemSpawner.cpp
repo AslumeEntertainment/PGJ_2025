@@ -34,14 +34,10 @@ void APaintableItemSpawner::BeginPlay()
 
 	for (int i = 0; i < NumSpawnPoints; i++)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Iteration - %d"), i);
 		int RandIndex = i<MinimumSpawnedItems ? 0 : FMath::RandRange(0, SpawnableItems.Num() - 1);
-		UE_LOG(LogTemp, Warning, TEXT("RandIndex - %d"), RandIndex);
 		int RandIndexLocation = FMath::RandRange(0, SpawnPoints.Num() - 1);
-		UE_LOG(LogTemp, Warning, TEXT("RandLocation - %d"), RandIndexLocation);
 		FVector RandLocation = SpawnPoints[RandIndexLocation];
 		SpawnPoints.RemoveAt(RandIndexLocation);
-		UE_LOG(LogTemp, Warning, TEXT("After remove location lenghts - %d"), SpawnPoints.Num());
 		if (SpawnableItems[RandIndex] == nullptr) continue;
 
 		APaintableItem* Item = World->SpawnActor<APaintableItem>(SpawnableItems[RandIndex], RandLocation, FRotator(0, 0, 0), Params);

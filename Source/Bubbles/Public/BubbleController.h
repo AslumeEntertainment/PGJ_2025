@@ -28,4 +28,7 @@ public:
 	void Client_SetInputMode(EInputMode InputMode);
 
 	void OnPossess(APawn* InPawn) override;
+
+	UFUNCTION(/*Client, Reliable*/)
+	void Client_OnSessionMessegeReceived(FText Messege);
 };
