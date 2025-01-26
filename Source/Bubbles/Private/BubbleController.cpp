@@ -26,3 +26,9 @@ void ABubbleController::OnPossess(APawn* InPawn)
 	Super::OnPossess(InPawn);
 	Client_SetInputMode(EInputMode::GameOnly);
 }
+
+void ABubbleController::Client_OnSessionMessegeReceived(FText Messege)//_Implementation(FText Messege)
+{
+	
+	UE_LOG(LogTemp, Warning, TEXT("Client Recieved: %s"), *Messege.ToString());
+}
