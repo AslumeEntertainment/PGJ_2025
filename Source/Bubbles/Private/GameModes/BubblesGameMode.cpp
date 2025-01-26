@@ -74,7 +74,7 @@ void ABubblesGameMode::PrepareGame()
 	FActorSpawnParameters Params;
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-	for (TPair<ABubbleController*, int> Player : Players) //TUka stava seg fluat shoto edin actula obekt go tretira kato null MF
+	for (TPair<ABubbleController*, int> Player : Players)
 	{
 		AHumanBubble* Char;
 		if (Player.Key->IsLocalController())
