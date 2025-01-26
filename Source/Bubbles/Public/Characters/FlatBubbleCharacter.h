@@ -36,6 +36,8 @@ protected:
 
 	virtual void Move(const FInputActionValue& Value) override;
 
+	virtual void PossessedBy(AController* NewController) override;
+
 	void StartCrouch();
 
 	void StopCrouch();

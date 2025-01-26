@@ -9,6 +9,7 @@
 
 class ABubbleController;
 class AHumanBubble;
+class APaintableItemSpawner;
 
 UCLASS(minimalapi)
 class ABubblesGameMode : public AGameModeBase
@@ -25,6 +26,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere)
 	TMap<ABubbleController*, int> Players;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<APaintableItemSpawner> ItemSpawnerClass;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AHumanBubble> CleanerClass;
@@ -45,26 +49,58 @@ public:
 	FRotator ContaminatorRotation;
 
 	FTimerHandle PrepearingPeriodTimer;
+	UPROPERTY(EditAnywhere)
 	float PrepearingPeriodLenght = 5;
 
 	FTimerHandle GamePeriodTimer;
+	UPROPERTY(EditAnywhere)
 	float GamePeriodLenght = 300;
+
+	UPROPERTY()
+	APaintableItemSpawner* Spawner;
 
 	void CheckLobbyReadiness();
 
 	ABubblesGameMode();
 
+	void BeginPlay() override;
+
 	void PostLogin(APlayerController* NewPlayer) override;
 
+	UFUNCTION()
 	void PrepareGame();
 
+	UFUNCTION()
 	void StartGame();
 
+	UFUNCTION()
 	void Countdown();
 
+	UFUNCTION()
 	void EndGame();
 
+	UFUNCTION()
+	void OnCleanPoints(int points);
+
+	UFUNCTION()
+	void OnContaminPoints(int points);
+
+	UFUNCTION()
+	void OnProgress(float progress);
+	
 	FTextTransferSignature OnLobbyMessegeChanged;
+	
+	FIntegerTransferSignature OnCooldownUpdate;
+
+	FIntegerTransferSignature OnCleanerPointUpdate;
+
+	FIntegerTransferSignature OnContaminatorPointUpdate;
+
+	FFloatTransferSignature OnProgressUpdate;
+	
+	FVoidDataTransferSignature OnGameStart;
+	
+	FIntegerTransferSignature OnGameEnd;
 };
 
 

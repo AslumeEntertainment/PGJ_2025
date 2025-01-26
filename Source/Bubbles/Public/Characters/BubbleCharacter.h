@@ -98,5 +98,6 @@ public:
 
 	UObject* GetFocusedInteractableObject() { return FocusedInteractableObject; }
 
+	UPROPERTY(BlueprintAssignable)
 	FTextTransferSignature InteractIndicationTextDelegate;
 };

@@ -23,7 +23,7 @@ void AInGameHUD::BeginPlay()
 		PlayerOwner->bShowMouseCursor = false;
 	}
 
-	InteractionWidget = CreateWidget<UInteractionWidget>(UGameplayStatics::GetGameInstance(World), InteractionWidgetClass);
+	/*InteractionWidget = CreateWidget<UInteractionWidget>(UGameplayStatics::GetGameInstance(World), InteractionWidgetClass);
 	ABubbleCharacter* BubbleCharacter = Cast<ABubbleCharacter>(PlayerOwner->GetPawn());
 	if (IsValid(BubbleCharacter))
 	{
@@ -31,7 +31,7 @@ void AInGameHUD::BeginPlay()
 	}
 
 
-	ToggleInteractionWidget(true);
+	ToggleInteractionWidget(true);*/
 
 }
 

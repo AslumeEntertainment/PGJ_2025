@@ -42,6 +42,8 @@ protected:
 	void OnNetWorthChanged();
 public:
 
+	int GetWinner() { return Cleaner + Contaminator; }
+
 	FIntegerTransferSignature OnCleanerPointsChanged;
 	FIntegerTransferSignature OnContaminatorPointsChanged;
 	FFloatTransferSignature OnProgrssUpdated;

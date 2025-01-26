@@ -12,7 +12,6 @@ AFlatBubbleCharacter::AFlatBubbleCharacter()
 {
 	InteractionCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("InteractionCapsule"));
 	InteractionCapsule->SetupAttachment(GetRootComponent());
-	InteractionCapsule->OnComponentBeginOverlap.AddDynamic(this, &AFlatBubbleCharacter::OnInteractionCapsuleBeginOverlap);
 }
 
 void AFlatBubbleCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -49,6 +48,13 @@ void AFlatBubbleCharacter::Move(const FInputActionValue& Value)
 	FVector Direction = (MovementValue > 0) ? FVector(0, 1, 0) : FVector(0, -1, 0);
 	
 	AddMovementInput(Direction, FMath::Abs(MovementValue));
+}
+
+void AFlatBubbleCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	InteractionCapsule->OnComponentBeginOverlap.AddDynamic(this, &AFlatBubbleCharacter::OnInteractionCapsuleBeginOverlap);
 }
 
 void AFlatBubbleCharacter::StartCrouch()

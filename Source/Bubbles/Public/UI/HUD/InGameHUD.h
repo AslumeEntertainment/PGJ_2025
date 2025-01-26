@@ -20,7 +20,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "WidgetClasses");
 	TSubclassOf<UInteractionWidget> InteractionWidgetClass;
 
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UInteractionWidget* InteractionWidget;
 
 public:

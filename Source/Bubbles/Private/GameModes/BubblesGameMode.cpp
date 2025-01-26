@@ -3,10 +3,25 @@
 #include "GameModes/BubblesGameMode.h"
 #include "Characters/HumanBubble.h"
 #include "BubbleController.h" 
+#include "Kismet/GameplayStatics.h"
+#include "Managers/PaintableItemSpawner.h"
 #include "UObject/ConstructorHelpers.h"
 
 ABubblesGameMode::ABubblesGameMode()
 {
+
+}
+
+void ABubblesGameMode::BeginPlay()
+{
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ItemSpawnerClass, FoundActors);
+
+	Spawner = Cast<APaintableItemSpawner>(FoundActors[0]);
+	
+	Spawner->OnCleanerPointsChanged;
+	Spawner->OnContaminatorPointsChanged;
+	Spawner->OnProgrssUpdated;
 
 }
 
@@ -35,7 +50,10 @@ void ABubblesGameMode::PostLogin(APlayerController* NewPlayer)
 
 	Players.Add(PC, 0);
 
-	OnLobbyMessegeChanged.AddDynamic(PC, &ABubbleController::Client_OnSessionMessegeReceived);
+	OnLobbyMessegeChanged.AddDynamic(PC, &ABubbleController::OnSessionMessegeReceived);
+	OnCooldownUpdate.AddDynamic(PC, &ABubbleController::UpdateRemainingTime);
+	OnGameStart.AddDynamic(PC, &ABubbleController::HideStartingWidget);
+	OnGameEnd.AddDynamic(PC, &ABubbleController::ShowEndingWidget);
 
 	PC->Client_SetInputMode(EInputMode::UIOnly);//Must be GameOnly by default
 	//PC->OnConnectionCleanUp.AddDynamic(this, &AGameplayGameMode::UnRegisterRequest);
@@ -56,6 +74,7 @@ void ABubblesGameMode::CheckLobbyReadiness()
 	}
 
 	OnLobbyMessegeChanged.Broadcast(FText::FromString("Preparing game..."));
+	OnGameStart.Broadcast();
 
 	GetWorldTimerManager().SetTimer(PrepearingPeriodTimer, this, &ABubblesGameMode::StartGame, PrepearingPeriodLenght, false);
 
@@ -74,20 +93,28 @@ void ABubblesGameMode::PrepareGame()
 	FActorSpawnParameters Params;
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-	for (TPair<ABubbleController*, int> Player : Players)
+	TArray<ABubbleController*> PlayersArray;
+	Players.GenerateKeyArray(PlayersArray);
+
+	for (int i = 0; i < PlayersArray.Num(); i++)
 	{
+		if (IsValid(PlayersArray[i]) == false)
+		{
+			UE_LOG(LogTemp, Error, TEXT("FORTNITE"));
+			return;
+		}
 		AHumanBubble* Char;
-		if (Player.Key->IsLocalController())
+		if (PlayersArray[i]->IsLocalController())
 		{
 			Char = World->SpawnActor<AHumanBubble>(CleanerClass, CleanerLocation, CleanerRotation, Params);
-			Players.Emplace(Player.Key, 1);
+			Players.Emplace(PlayersArray[i], 1);
 		}
 		else
 		{
 			Char = World->SpawnActor<AHumanBubble>(ContaminatorClass, ContaminatorLocation, ContaminatorRotation, Params);
-			Players.Emplace(Player.Key, -1);
+			Players.Emplace(PlayersArray[i], -1);
 		}
-		Player.Key->Possess(Char);
+		PlayersArray[i]->Possess(Char);
 	}
 	
 }
@@ -98,12 +125,14 @@ void ABubblesGameMode::StartGame()
 	PrepearingPeriodTimer.Invalidate();
 
 	OnLobbyMessegeChanged.Broadcast(FText::FromString("Game started"));
+	OnCooldownUpdate.Broadcast(GamePeriodLenght);
 	GetWorldTimerManager().SetTimer(GamePeriodTimer, this, &ABubblesGameMode::Countdown, 1, true, 1);
 }
 
 void ABubblesGameMode::Countdown() //tuka snqkuv delegat ima passvash ostavashtato vreme na vseki call
 {
 	GamePeriodLenght--;
+	OnCooldownUpdate.Broadcast(GamePeriodLenght);
 	if (GamePeriodLenght > 0)
 	{
 		return;
@@ -115,5 +144,22 @@ void ABubblesGameMode::Countdown() //tuka snqkuv delegat ima passvash ostavashta
 
 void ABubblesGameMode::EndGame() //tuka trqbva da podadesh na playerite widgeti dase vurnat kum main menu
 {
-	OnLobbyMessegeChanged.Broadcast(FText::FromString("Game ended"));
+	OnGameEnd.Broadcast(Spawner->GetWinner());
+}
+
+void ABubblesGameMode::OnCleanPoints(int points)
+{
+	OnCleanerPointUpdate.Broadcast(points);
+
+	
+}
+
+void ABubblesGameMode::OnContaminPoints(int points)
+{
+	OnContaminatorPointUpdate.Broadcast(points);
+}
+
+void ABubblesGameMode::OnProgress(float progress)
+{
+	OnProgressUpdate.Broadcast(progress);
 }
