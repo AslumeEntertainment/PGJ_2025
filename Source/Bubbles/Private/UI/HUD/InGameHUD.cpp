@@ -6,7 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 
 #include "Characters/BubbleCharacter.h"
-#include "UI/InteractionWidget.h"
+#include "UI/Widgets/InteractionWidget.h"
 
 
 void AInGameHUD::BeginPlay()
