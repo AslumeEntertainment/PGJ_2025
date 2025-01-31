@@ -6,6 +6,7 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "Net/UnrealNetwork.h"
+#include "Characters/HumanBubble.h"
 
 #include "BubbleController.h"
 #include "GAS/BubbleAttributeSet.h"
@@ -94,7 +95,6 @@ void APaintableItem::StopInteraction()
 
 void APaintableItem::InteractRequest(AController* InteractingCharacter)
 {
-
 	if (HasAuthority() == false)
 	{
 		return;
