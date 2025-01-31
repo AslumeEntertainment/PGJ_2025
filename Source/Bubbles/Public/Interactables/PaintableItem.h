@@ -56,7 +56,7 @@ protected:
 
 	void ProgressCleaning();
 
-	void StopInteraction();
+	void StopInteraction(bool GiveEnregy=false);
 
 	virtual void InteractRequest(AController* InteractingCharacter) override;
 

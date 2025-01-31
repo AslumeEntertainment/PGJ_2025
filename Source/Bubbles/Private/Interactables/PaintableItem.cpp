@@ -74,16 +74,32 @@ void APaintableItem::ProgressCleaning()
 	SetCleanness(Cleanness + AttributeSet->GetEffectiveness());
 	
 
-	if ((FMath::Abs(Cleanness) >= MaxCleanness && FMath::Sign(AttributeSet->GetEffectiveness()) == FMath::Sign(Cleanness)) || Iterations<=0)
+	if ((FMath::Abs(Cleanness) >= MaxCleanness && FMath::Sign(AttributeSet->GetEffectiveness()) == FMath::Sign(Cleanness)) )
+	{
+		IsLocked = false;
+		StopInteraction(true);
+		return;
+	}
+	if (Iterations <= 0)
 	{
 		IsLocked = false;
 		StopInteraction();
+		return;
 	}
 }
 
-void APaintableItem::StopInteraction()
+void APaintableItem::StopInteraction(bool GiveEnregy)
 {
-	UE_LOG(LogTemp, Warning, TEXT("POLUCHAVAM RPC????"));
+
+	if (GiveEnregy)
+	{
+		UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(InteractingPlayer->GetPawn());
+		const UBubbleAttributeSet* AttributeSet = Cast<UBubbleAttributeSet>(ASC->GetAttributeSet(UBubbleAttributeSet::StaticClass()));
+
+		ASC->SetNumericAttributeBase(UBubbleAttributeSet::GetEnergyAttribute(), FMath::Clamp(AttributeSet->GetEnergy() + GetNetWorth(), 0, AttributeSet->GetMaxEnergy()));
+	}
+	
+
 	InteractingPlayer->Client_SetInputMode(EInputMode::GameOnly);
 	InteractingPlayer = nullptr;
 	GetWorldTimerManager().ClearTimer(CleaningPeriodTimer);
