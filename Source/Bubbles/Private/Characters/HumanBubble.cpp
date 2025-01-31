@@ -10,6 +10,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "AbilitySystemComponent.h"
 
 //DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -98,6 +99,15 @@ void AHumanBubble::EmitInteractionChecker()
 	CheckForInteractables(HitResult);
 }
 
+void AHumanBubble::TriggerAbility()
+{
+	//FGameplayEventData Data = FGameplayEventData();
+	//Data.Instigator = this;
+	//AbilitySystemComponent->HandleGameplayEvent(AbilityTag, &Data);
+	AbilitySystemComponent->TryActivateAbilitiesByTag(AbilityTag);
+	//AbilitySystemComponent->Try
+}
+
 void AHumanBubble::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -114,7 +124,7 @@ void AHumanBubble::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		//EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AHumanBubble::Move);
 
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &AHumanBubble::TriggerInteraction);
-		
+		EnhancedInputComponent->BindAction(AbilityAction, ETriggerEvent::Triggered, this, &AHumanBubble::TriggerAbility);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AHumanBubble::Look);
 	}
 	else

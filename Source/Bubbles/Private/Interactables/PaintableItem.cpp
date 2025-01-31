@@ -38,7 +38,7 @@ void APaintableItem::SetCleanness(int NewValue, bool bCanBypass)
 		}
 	}
 
-	
+	UE_LOG(LogTemp, Warning, TEXT("Cleaning - Cleanness: %d"), Cleanness);
 
 	UpdateTexture();
 }
@@ -72,7 +72,7 @@ void APaintableItem::ProgressCleaning()
 	const UBubbleAttributeSet* AttributeSet = Cast<UBubbleAttributeSet>(ASC->GetAttributeSet(UBubbleAttributeSet::StaticClass()));
 
 	SetCleanness(Cleanness + AttributeSet->GetEffectiveness());
-	UE_LOG(LogTemp, Warning, TEXT("Cleaning - Cleanness: %d  Step:%d"), Cleanness, Iterations);
+	
 
 	if ((FMath::Abs(Cleanness) >= MaxCleanness && FMath::Sign(AttributeSet->GetEffectiveness()) == FMath::Sign(Cleanness)) || Iterations<=0)
 	{
