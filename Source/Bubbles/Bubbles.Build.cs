@@ -9,7 +9,18 @@ public class Bubbles : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         DynamicallyLoadedModuleNames.Add("OnlineSubsystemNull");
 
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
+        PublicDependencyModuleNames.AddRange(
+            new string[] 
+            { 
+                "Core", 
+                "CoreUObject", 
+                "Engine", 
+                "InputCore", 
+                "EnhancedInput",
+                "OnlineSubsystem",
+                "OnlineSubsystemUtils" 
+            }
+            );
 
         PrivateDependencyModuleNames.AddRange(
             new string[]
@@ -22,7 +33,9 @@ public class Bubbles : ModuleRules
                 "GameplayAbilities",
                 "GameplayTags",
                 "GameplayTasks",
-                "UMG"
+                "UMG",
+                "OnlineSubsystem",
+                "OnlineSubsystemUtils"
 				// ... add private dependencies that you statically link with here ...	
 			}
             );

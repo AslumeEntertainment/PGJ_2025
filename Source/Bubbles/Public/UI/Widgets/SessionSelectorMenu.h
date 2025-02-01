@@ -9,6 +9,7 @@
 
 class UButton;
 class UScrollBox;
+class UWidgetSwitcher;
 class USessionButtonWidget;
 
 UCLASS()
@@ -18,20 +19,28 @@ class BUBBLES_API USessionSelectorMenu : public UUserWidget
 	
 protected:
 
+	UPROPERTY(EditDefaultsOnly, Category = "WidgetClasses");
+	TSubclassOf<USessionButtonWidget> SessionButtonWidgetClass;
+
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* BTN_Back;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UScrollBox* SessionScrollBox;
 
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UWidgetSwitcher* SessionWidgetSwitcher;
+
 	UFUNCTION()
 	void OnBackClicked();
+
+	virtual void NativeConstruct() override;
 
 public:
 
 	virtual void NativeOnInitialized() override;
 
-	void AddSessionButton(USessionButtonWidget* SessionButton);
+	USessionButtonWidget* AddSessionButton(FText SessionName);
 
 	void ClearSessions();
 

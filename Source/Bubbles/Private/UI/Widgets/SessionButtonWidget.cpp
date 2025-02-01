@@ -15,6 +15,7 @@ void USessionButtonWidget::OnSessionClicked()
 	}
 
 	SessionClicked.Broadcast(GetParent()->GetChildIndex(this));
+	BTN_Session->SetIsEnabled(false);
 }
 
 void USessionButtonWidget::NativeOnInitialized()

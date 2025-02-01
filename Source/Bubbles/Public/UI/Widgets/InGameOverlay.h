@@ -30,11 +30,15 @@ protected:
 
 public:
 
+	UFUNCTION()
 	void SetTimerValue(int InTime);
 
+	UFUNCTION()
 	void SetCleanerScore(int Score);
 
+	UFUNCTION()
 	void SetContaminatorScore(int Score);
 
-	void SetGameProgress(int GameProgress);
+	UFUNCTION()
+	void SetGameProgress(float GameProgress);
 };

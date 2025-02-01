@@ -5,6 +5,7 @@
 
 #include "Components/Button.h"
 #include "Components/ScrollBox.h"
+#include "Components/WidgetSwitcher.h"
 
 #include "UI/Widgets/SessionButtonWidget.h"
 
@@ -14,15 +15,34 @@ void USessionSelectorMenu::OnBackClicked()
 	BackClicked.Broadcast();
 }
 
+void USessionSelectorMenu::NativeConstruct()
+{
+	Super::NativeConstruct();
+	SessionScrollBox->ClearChildren();
+}
+
 void USessionSelectorMenu::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 	BTN_Back->OnClicked.AddDynamic(this, &USessionSelectorMenu::OnBackClicked);
+
+	SessionWidgetSwitcher->SetActiveWidgetIndex(0);
 }
 
-void USessionSelectorMenu::AddSessionButton(USessionButtonWidget* SessionButton)
+USessionButtonWidget* USessionSelectorMenu::AddSessionButton(FText SessionName)
 {
+	USessionButtonWidget* SessionButton = CreateWidget<USessionButtonWidget>(this, SessionButtonWidgetClass);
+	if (IsValid(SessionButton) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("USessionSelectorMenu::AddSessionButton IsValid(SessionButton) == false"));
+		return nullptr;
+	}
+	SessionButton->SetSessionName(SessionName);
 	SessionScrollBox->AddChild(SessionButton);
+
+	SessionWidgetSwitcher->SetActiveWidgetIndex(1);
+
+	return SessionButton;
 }
 
 void USessionSelectorMenu::ClearSessions()

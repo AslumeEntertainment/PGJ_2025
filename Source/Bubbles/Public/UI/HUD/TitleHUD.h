@@ -4,14 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
-#include "InGameHUD.generated.h"
+#include "TitleHUD.generated.h"
 
-class UInGameOverlay;
+class UTitleMenu;
+class UHostJoinMenu;
 class ULoadingScreen;
-class UInteractionWidget;
+class USessionSelectorMenu;
 
 UCLASS()
-class BUBBLES_API AInGameHUD : public AHUD
+class BUBBLES_API ATitleHUD : public AHUD
 {
 	GENERATED_BODY()
 	
@@ -20,27 +21,36 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditDefaultsOnly, Category = "WidgetClasses");
-	TSubclassOf<UInteractionWidget> InteractionWidgetClass;
+	TSubclassOf<UTitleMenu> TitleMenuClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "WidgetClasses");
-	TSubclassOf<UInGameOverlay> InGameOverlayClass;
+	TSubclassOf<UHostJoinMenu> HostJoinMenuClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "WidgetClasses");
 	TSubclassOf<ULoadingScreen> LoadingScreenClass;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	UInteractionWidget* InteractionWidget;
+	UPROPERTY(EditDefaultsOnly, Category = "WidgetClasses");
+	TSubclassOf<USessionSelectorMenu> SessionSelectorMenuClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	UInGameOverlay* InGameOverlay;
+	UTitleMenu* TitleMenu;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UHostJoinMenu* HostJoinMenu;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	ULoadingScreen* LoadingScreen;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	USessionSelectorMenu* SessionSelectorMenu;
+
 public:
 
 	UFUNCTION()
-	void ShowInGameOverlay();
+	void OpenTitleMenu();
+
+	UFUNCTION()
+	void OpenHostJoinMenu();
 
 	UFUNCTION()
 	void ShowLoadingScreen(FText LoadingText = FText::FromString("Loading..."));
@@ -49,9 +59,11 @@ public:
 	void RemoveLoadingScreen();
 
 	UFUNCTION()
-	void ToggleInteractionWidget(bool bShouldShow);
+	void ShowSessionSelectorMenu();
 
 	UFUNCTION()
+	void FillSessions(TArray<FText> SessionNames);
+
 	void ClearScreen();
 
 };
