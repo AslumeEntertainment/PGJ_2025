@@ -51,10 +51,10 @@ void ASublevelExit::InteractRequest(AController* InteractingCharacter)
 	AInGameHUD* HUD = Cast<AInGameHUD>(PlayerCont->GetHUD());
 	if (IsValid(HUD))
 	{
-		HUD->ToggleInteractionWidget(true);
+		HUD->ShowInteractionWidget();
 	}
 
-	FlatBubble->UnbindAllInputBindings();
+	//FlatBubble->UnbindAllInputBindings();
 	PlayerCont->Possess(FlatBubble->HumanBubbleOwner);
 
 	FlatBubble->Destroy();

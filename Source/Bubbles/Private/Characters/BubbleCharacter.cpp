@@ -58,6 +58,11 @@ void ABubbleCharacter::EmitInteractionChecker()
 bool ABubbleCharacter::CheckForInteractables(FHitResult HitResult)
 {
 	ABubbleController* PC = Cast<ABubbleController>(GetController());
+	if (IsValid(PC) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::CheckForInteractables IsValid(PC) == false"));
+		return false;
+	}
 	if (PC->IsInputLocked)
 	{
 		if (FocusedInteractableObject != nullptr)
@@ -132,8 +137,17 @@ void ABubbleCharacter::PossessedBy(AController* NewController)
 	InitCharacterDefaults();
 }
 
-void ABubbleCharacter::OnRep_PlayerState()
+void ABubbleCharacter::UnPossessed()
 {
+	//UnbindAllInputBindings();
+	Client_OnUnPossessed();
+
+	Super::UnPossessed();
+}
+
+void ABubbleCharacter::Client_OnUnPossessed_Implementation()
+{
+	UnbindAllInputBindings();
 }
 
 void ABubbleCharacter::InitCharacterDefaults()

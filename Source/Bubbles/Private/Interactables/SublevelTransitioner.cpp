@@ -52,7 +52,7 @@ void ASublevelTransitioner::InteractRequest(AController* InteractingCharacter)
 		return;
 	}
 
-	PlayerPawn->UnbindAllInputBindings();
+	//PlayerPawn->UnbindAllInputBindings();
 	PlayerCont->Possess(FlatBubble);
 	PlayerCont->SetViewTargetWithBlend(SublevelCamera);
 
@@ -63,7 +63,7 @@ void ASublevelTransitioner::InteractRequest(AController* InteractingCharacter)
 	AInGameHUD* HUD = Cast<AInGameHUD>(PlayerCont->GetHUD());
 	if (IsValid(HUD))
 	{
-		HUD->ToggleInteractionWidget(false);
+		HUD->HideInteractionWidget();
 	}
 }
 

@@ -83,7 +83,10 @@ public:
 
 	virtual void PossessedBy(AController* NewController) override;
 
-	virtual void OnRep_PlayerState() override;
+	virtual void UnPossessed() override;
+
+	UFUNCTION(Client, Reliable)
+	void Client_OnUnPossessed();
 
 	void InitCharacterDefaults();
 

@@ -9,6 +9,7 @@
 class UInGameOverlay;
 class ULoadingScreen;
 class UInteractionWidget;
+class UGameOverWidget;
 
 UCLASS()
 class BUBBLES_API AInGameHUD : public AHUD
@@ -28,6 +29,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "WidgetClasses");
 	TSubclassOf<ULoadingScreen> LoadingScreenClass;
 
+	UPROPERTY(EditDefaultsOnly, Category = "WidgetClasses");
+	TSubclassOf<UGameOverWidget> GameOverWidgetClass;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UInteractionWidget* InteractionWidget;
 
@@ -36,6 +40,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	ULoadingScreen* LoadingScreen;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UGameOverWidget* GameOverWidget;
 
 public:
 
@@ -49,7 +56,13 @@ public:
 	void RemoveLoadingScreen();
 
 	UFUNCTION()
-	void ToggleInteractionWidget(bool bShouldShow);
+	void ShowInteractionWidget();
+
+	UFUNCTION()
+	void HideInteractionWidget();
+
+	UFUNCTION()
+	void ShowGameOverWidget(FText GameOverMessage);
 
 	UFUNCTION()
 	void ClearScreen();

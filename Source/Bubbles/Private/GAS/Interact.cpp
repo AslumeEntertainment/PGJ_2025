@@ -11,20 +11,20 @@ void UInteract::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 {
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
-		UE_LOG(LogTemp, Error, TEXT("USGGA_Interact::ActivateAbility CommitAbility == false"));
+		UE_LOG(LogTemp, Error, TEXT("UInteract::ActivateAbility CommitAbility == false"));
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 	}
 	ABubbleCharacter* Player = Cast<ABubbleCharacter>(ActorInfo->AvatarActor.Get());
 	if (!IsValid(Player))
 	{
-		UE_LOG(LogTemp, Error, TEXT("USGGA_Interact::ActivateAbility IsValid(Player) == false"));
+		UE_LOG(LogTemp, Error, TEXT("UInteract::ActivateAbility IsValid(Player) == false"));
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
 	IInteractable* FocusedInteractable = Cast<IInteractable>(Player->GetFocusedInteractableObject());
 	if (FocusedInteractable == nullptr)
 	{
-		//UE_LOG(LogTemp, Error, TEXT("USGGA_Interact::ActivateAbility FocusedInteractable == nullptr"));
+		//UE_LOG(LogTemp, Error, TEXT("UInteract::ActivateAbility FocusedInteractable == nullptr"));
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
