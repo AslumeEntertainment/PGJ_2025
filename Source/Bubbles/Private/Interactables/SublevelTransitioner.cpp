@@ -21,13 +21,6 @@ void ASublevelTransitioner::InteractRequest(AController* InteractingCharacter)
 		return;
 	}
 
-	UWorld* World = GetWorld();
-	if (IsValid(World) == false)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ASublevelTransitioner::InteractRequest IsValid(World) == false"));
-		return;
-	}
-
 	AHumanBubble* PlayerPawn = Cast<AHumanBubble>(InteractingCharacter->GetPawn());
 	if(IsValid(PlayerPawn) == false)
 	{
@@ -42,19 +35,30 @@ void ASublevelTransitioner::InteractRequest(AController* InteractingCharacter)
 		return;
 	}
 
+	UWorld* World = GetWorld();
+	if (IsValid(World) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ASublevelTransitioner::InteractRequest IsValid(World) == false"));
+		return;
+	}
+
 	FActorSpawnParameters SpawnParams = FActorSpawnParameters();
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-	AFlatBubbleCharacter* FlatBubble = World->SpawnActor<AFlatBubbleCharacter>(FlatBubbleClass, SublevelStartingLocation, FRotator(0, 0, 0), SpawnParams);
+	AFlatBubbleCharacter* FlatBubble = World->SpawnActor<AFlatBubbleCharacter>(FlatBubbleClass, SublevelStartingLocation, FlatBubbleSpawnRotation, SpawnParams);
 	if (IsValid(FlatBubble) == false)
 	{
 		UE_LOG(LogTemp, Error, TEXT("ASublevelTransitioner::InteractRequest IsValid(FlatBubble) == false"));
 		return;
 	}
+	FlatBubble->NetMulticast_SetFlatBubbleMaterial(PlayerPawn->FlatBubbleMaterial);
 
-	PlayerPawn->UnbindAllInputBindings();
+	PlayerPawn->Client_UnbindMappingContext();
 	PlayerCont->Possess(FlatBubble);
+	FlatBubble->Client_BindMappingContext();
+
 	PlayerCont->SetViewTargetWithBlend(SublevelCamera);
+	PlayerCont->ClientSetRotation(FlatBubbleSpawnRotation);
 
 	float CurrentEffectiveness = PlayerPawn->GetAbilitySystemComponent()->GetNumericAttributeBase(UBubbleAttributeSet::GetEffectivenessAttribute());
 	FlatBubble->GetAbilitySystemComponent()->SetNumericAttributeBase(UBubbleAttributeSet::GetEffectivenessAttribute(), CurrentEffectiveness);
@@ -63,7 +67,7 @@ void ASublevelTransitioner::InteractRequest(AController* InteractingCharacter)
 	AInGameHUD* HUD = Cast<AInGameHUD>(PlayerCont->GetHUD());
 	if (IsValid(HUD))
 	{
-		HUD->ToggleInteractionWidget(false);
+		HUD->HideInteractionWidget();
 	}
 }
 

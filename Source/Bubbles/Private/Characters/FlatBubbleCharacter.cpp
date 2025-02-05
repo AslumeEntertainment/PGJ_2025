@@ -17,18 +17,9 @@ AFlatBubbleCharacter::AFlatBubbleCharacter()
 void AFlatBubbleCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	/*if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}*/
 
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		//EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AFlatBubbleCharacter::Move);
-
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
@@ -54,6 +45,14 @@ void AFlatBubbleCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
+	//SetActorRotation(FRotator(0, 0, 0));
+	InteractionCapsule->OnComponentBeginOverlap.AddDynamic(this, &AFlatBubbleCharacter::OnInteractionCapsuleBeginOverlap);
+}
+
+void AFlatBubbleCharacter::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+
 	InteractionCapsule->OnComponentBeginOverlap.AddDynamic(this, &AFlatBubbleCharacter::OnInteractionCapsuleBeginOverlap);
 }
 
@@ -74,4 +73,9 @@ void AFlatBubbleCharacter::OnInteractionCapsuleBeginOverlap(UPrimitiveComponent*
 	{
 		TriggerInteraction();
 	}
+}
+
+void AFlatBubbleCharacter::NetMulticast_SetFlatBubbleMaterial_Implementation(UMaterialInterface* FlatBubbleMaterial)
+{
+	GetMesh()->SetMaterial(0, FlatBubbleMaterial);
 }

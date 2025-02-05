@@ -6,7 +6,10 @@
 #include "GameFramework/HUD.h"
 #include "InGameHUD.generated.h"
 
+class UInGameOverlay;
+class ULoadingScreen;
 class UInteractionWidget;
+class UGameOverWidget;
 
 UCLASS()
 class BUBBLES_API AInGameHUD : public AHUD
@@ -20,10 +23,48 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "WidgetClasses");
 	TSubclassOf<UInteractionWidget> InteractionWidgetClass;
 
+	UPROPERTY(EditDefaultsOnly, Category = "WidgetClasses");
+	TSubclassOf<UInGameOverlay> InGameOverlayClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "WidgetClasses");
+	TSubclassOf<ULoadingScreen> LoadingScreenClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "WidgetClasses");
+	TSubclassOf<UGameOverWidget> GameOverWidgetClass;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UInteractionWidget* InteractionWidget;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UInGameOverlay* InGameOverlay;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	ULoadingScreen* LoadingScreen;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UGameOverWidget* GameOverWidget;
+
 public:
 
-	void ToggleInteractionWidget(bool bShouldShow);
+	UFUNCTION()
+	void ShowInGameOverlay();
+
+	UFUNCTION()
+	void ShowLoadingScreen(FText LoadingText = FText::FromString("Loading..."));
+
+	UFUNCTION()
+	void RemoveLoadingScreen();
+
+	UFUNCTION()
+	void ShowInteractionWidget();
+
+	UFUNCTION()
+	void HideInteractionWidget();
+
+	UFUNCTION()
+	void ShowGameOverWidget(FText GameOverMessage);
+
+	UFUNCTION()
+	void ClearScreen();
+
 };

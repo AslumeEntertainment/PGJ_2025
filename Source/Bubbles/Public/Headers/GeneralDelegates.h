@@ -37,6 +37,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStringTransferSignature, FString, T
 UDELEGATE()
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStringArrayTransferSignature, TArray<FString>, FriendNames);
 
+UDELEGATE()
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTextArrayTransferSignature, TArray<FText>, SessionNames);
+
 //------------------------------------------------------------------------------------------
 
 

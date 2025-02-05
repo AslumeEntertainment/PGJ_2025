@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Characters/BubbleCharacter.h"
-//#include "Logging/LogMacros.h"
 #include "HumanBubble.generated.h"
 
 class USpringArmComponent;
@@ -13,23 +12,16 @@ class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
 
-//DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
-
 UCLASS(config=Game)
 class AHumanBubble : public ABubbleCharacter
 {
 	GENERATED_BODY()
 
-	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
 
-	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
-
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	//UInputAction* MoveAction;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
@@ -44,18 +36,17 @@ class AHumanBubble : public ABubbleCharacter
 	FGameplayTagContainer AbilityTag;
 
 public:
+
 	AHumanBubble();
 
 protected:
 
 	virtual void Move(const FInputActionValue& Value) override;
 
-	/** Called for looking input */
 	void Look(const FInputActionValue& Value);	
 
 protected:
 	
-	// To add mapping context
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void EmitInteractionChecker() override;
@@ -64,12 +55,16 @@ protected:
 
 public:
 
-	// APawn interface
+	UPROPERTY(EditDefaultsOnly)
+	UMaterialInterface* FlatBubbleMaterial;
+
+	UPROPERTY(EditDefaultsOnly)
+	UAnimMontage* InteractAnimation;
+
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-	/** Returns FollowCamera subobject **/
+
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 };
 

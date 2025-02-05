@@ -58,6 +58,11 @@ void ABubbleCharacter::EmitInteractionChecker()
 bool ABubbleCharacter::CheckForInteractables(FHitResult HitResult)
 {
 	ABubbleController* PC = Cast<ABubbleController>(GetController());
+	if (IsValid(PC) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::CheckForInteractables IsValid(PC) == false"));
+		return false;
+	}
 	if (PC->IsInputLocked)
 	{
 		if (FocusedInteractableObject != nullptr)
@@ -126,16 +131,6 @@ void ABubbleCharacter::TriggerInteraction()
 	AbilitySystemComponent->HandleGameplayEvent(InteractionAbilityTag, &Data);
 }
 
-void ABubbleCharacter::PossessedBy(AController* NewController)
-{
-	Super::PossessedBy(NewController);
-	InitCharacterDefaults();
-}
-
-void ABubbleCharacter::OnRep_PlayerState()
-{
-}
-
 void ABubbleCharacter::InitCharacterDefaults()
 {
 	if (bHasBeenInited)
@@ -179,22 +174,20 @@ void ABubbleCharacter::InitCharacterDefaults()
 	bHasBeenInited = true;
 }
 
-void ABubbleCharacter::Move(const FInputActionValue& Value)
+void ABubbleCharacter::PossessedBy(AController* NewController)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Object has not implemented Move"));
+	Super::PossessedBy(NewController);
+
+	Client_BindMappingContext();
+
+	InitCharacterDefaults();
 }
 
 void ABubbleCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) 
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABubbleCharacter::Move);
 	}
@@ -204,21 +197,44 @@ void ABubbleCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	}
 }
 
-void ABubbleCharacter::UnbindAllInputBindings()
+void ABubbleCharacter::Client_BindMappingContext_Implementation()
+{
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (IsValid(PlayerController) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::Client_BindMappingContext IsValid(PlayerController) == false"));
+		return;
+	}
+	UEnhancedInputLocalPlayerSubsystem* InputSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
+	if (IsValid(InputSystem) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::Client_BindMappingContext IsValid(InputSystem) == false"));
+		return;
+	}
+
+	InputSystem->AddMappingContext(DefaultMappingContext, 0);
+}
+
+void ABubbleCharacter::Client_UnbindMappingContext_Implementation()
 {
 	APlayerController* PlayerCont = Cast<APlayerController>(GetController());
 	if (IsValid(PlayerCont) == false)
 	{
-		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::UnbindAllInputBindings IsValid(PlayerCont) == false"));
+		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::Client_UnbindMappingContext IsValid(PlayerCont) == false"));
 		return;
 	}
 	UEnhancedInputLocalPlayerSubsystem* InputSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerCont->GetLocalPlayer());
 	if (IsValid(InputSystem) == false)
 	{
-		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::UnbindAllInputBindings IsValid(InputSystem) == false"));
+		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::Client_UnbindMappingContext IsValid(InputSystem) == false"));
 		return;
 	}
 
-	InputSystem->ClearAllMappings();
+	InputSystem->RemoveMappingContext(DefaultMappingContext);
+}
+
+void ABubbleCharacter::Move(const FInputActionValue& Value)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Object has not implemented Move"));
 }
 

@@ -23,9 +23,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UCapsuleComponent* InteractionCapsule;
 
-	/*UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* MoveAction;*/
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* JumpAction;
 
@@ -38,6 +35,8 @@ protected:
 
 	virtual void PossessedBy(AController* NewController) override;
 
+	virtual void OnRep_PlayerState() override;
+
 	void StartCrouch();
 
 	void StopCrouch();
@@ -49,5 +48,8 @@ public:
 
 	UPROPERTY()
 	AHumanBubble* HumanBubbleOwner = nullptr;
+
+	UFUNCTION(NetMulticast, Reliable)
+	void NetMulticast_SetFlatBubbleMaterial(UMaterialInterface* FlatBubbleMaterial);
 
 };

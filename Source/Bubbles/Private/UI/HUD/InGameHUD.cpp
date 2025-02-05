@@ -3,10 +3,15 @@
 
 #include "UI/HUD/InGameHUD.h"
 
+#include "Blueprint/WidgetLayoutLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
+#include "UI/Widgets/InteractionWidget.h"
+#include "UI/Widgets/GameOverWidget.h"
+#include "UI/Widgets/LoadingScreen.h"
+#include "UI/Widgets/InGameOverlay.h"
 #include "Characters/BubbleCharacter.h"
-#include "UI/InteractionWidget.h"
+#include "BubbleController.h"
 
 
 void AInGameHUD::BeginPlay()
@@ -23,36 +28,111 @@ void AInGameHUD::BeginPlay()
 		PlayerOwner->bShowMouseCursor = false;
 	}
 
-	/*InteractionWidget = CreateWidget<UInteractionWidget>(UGameplayStatics::GetGameInstance(World), InteractionWidgetClass);
+	InteractionWidget = CreateWidget<UInteractionWidget>(UGameplayStatics::GetGameInstance(World), InteractionWidgetClass);
+	InGameOverlay = CreateWidget<UInGameOverlay>(UGameplayStatics::GetGameInstance(World), InGameOverlayClass);
+	LoadingScreen = CreateWidget<ULoadingScreen>(UGameplayStatics::GetGameInstance(World), LoadingScreenClass);
+	GameOverWidget = CreateWidget<UGameOverWidget>(UGameplayStatics::GetGameInstance(World), GameOverWidgetClass);
+	
+	ABubbleController* BubbleCont = Cast<ABubbleController>(PlayerOwner);
+	if (IsValid(BubbleCont))
+	{
+		BubbleCont->OnGameStart.AddDynamic(this, &AInGameHUD::ShowInGameOverlay);
+		BubbleCont->OnCleanerPointUpdate.AddDynamic(InGameOverlay, &UInGameOverlay::SetCleanerScore);
+		BubbleCont->OnContaminatorPointUpdate.AddDynamic(InGameOverlay, &UInGameOverlay::SetContaminatorScore);
+		BubbleCont->OnProgressUpdate.AddDynamic(InGameOverlay, &UInGameOverlay::SetGameProgress);
+		BubbleCont->OnCooldownUpdate.AddDynamic(InGameOverlay, &UInGameOverlay::SetTimerValue);
+		BubbleCont->OnGameEnd.AddDynamic(this, &AInGameHUD::ShowGameOverWidget);
+	}
+
+	ShowLoadingScreen(FText::FromString("Waiting for all players"));
+}
+
+void AInGameHUD::ShowInGameOverlay()
+{
+	ClearScreen();
+
+	if (IsValid(InGameOverlay) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AInGameHUD::ShowInGameOverlay IsValid(InGameOverlay) == false"));
+		return;
+	}
+
+	InGameOverlay->AddToViewport();
+}
+
+void AInGameHUD::ShowLoadingScreen(FText LoadingText)
+{
+	if (IsValid(LoadingScreen) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AInGameHUD::ShowLoadingScreen IsValid(LoadingScreen) == false"));
+		return;
+	}
+
+	LoadingScreen->SetLoadingText(LoadingText);
+	if (LoadingScreen->IsInViewport() == false) LoadingScreen->AddToViewport(10);
+}
+
+void AInGameHUD::RemoveLoadingScreen()
+{
+	if (IsValid(LoadingScreen) && LoadingScreen->IsInViewport())
+	{
+		LoadingScreen->RemoveFromParent();
+	}
+}
+
+void AInGameHUD::ShowInteractionWidget()
+{
+	if (IsValid(InteractionWidget) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AInGameHUD::ShowInteractionWidget IsValid(InteractionWidget) == false"));
+		return;
+	}
+	if (InteractionWidget->IsInViewport())
+	{
+		return;
+	}
+	
 	ABubbleCharacter* BubbleCharacter = Cast<ABubbleCharacter>(PlayerOwner->GetPawn());
-	if (IsValid(BubbleCharacter))
+	if (IsValid(BubbleCharacter) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AInGameHUD::ToggleInteractionWidget IsValid(BubbleCharacter) == false"));
+		return;
+	}
+	if (BubbleCharacter->InteractIndicationTextDelegate.IsBound() == false)
 	{
 		BubbleCharacter->InteractIndicationTextDelegate.AddDynamic(InteractionWidget, &UInteractionWidget::SetInteractionText);
 	}
 
-
-	ToggleInteractionWidget(true);*/
-
+	InteractionWidget->AddToViewport();
 }
 
-void AInGameHUD::ToggleInteractionWidget(bool bShouldShow)
+void AInGameHUD::HideInteractionWidget()
 {
-	if (IsValid(InteractionWidget) == false || IsValid(PlayerOwner) == false)
+	if (IsValid(InteractionWidget) == false)
 	{
 		return;
 	}
-	
-	if ((bShouldShow && InteractionWidget->IsInViewport()) || !bShouldShow && !InteractionWidget->IsInViewport())
+
+	InteractionWidget->RemoveFromParent();
+}
+
+void AInGameHUD::ShowGameOverWidget(FText GameOverMessage)
+{
+	ClearScreen();
+
+	if (IsValid(GameOverWidget) == false || IsValid(PlayerOwner) == false)
 	{
 		return;
 	}
-	
-	if (bShouldShow)
-	{
-		InteractionWidget->AddToViewport();
-	}
-	else
-	{
-		InteractionWidget->RemoveFromParent();
-	}
+
+	PlayerOwner->SetInputMode(FInputModeUIOnly());
+	PlayerOwner->SetShowMouseCursor(true);
+
+	GameOverWidget->SetGameOverMessage(GameOverMessage);
+	GameOverWidget->AddToViewport();
+}
+
+void AInGameHUD::ClearScreen()
+{
+	UWidgetLayoutLibrary::RemoveAllWidgets(this);
 }

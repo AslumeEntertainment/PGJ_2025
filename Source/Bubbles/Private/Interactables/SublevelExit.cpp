@@ -43,19 +43,23 @@ void ASublevelExit::InteractRequest(AController* InteractingCharacter)
 	{
 		float CurrentEffectiveness = FlatBubble->GetAbilitySystemComponent()->GetNumericAttributeBase(UBubbleAttributeSet::GetEffectivenessAttribute());
 		FlatBubble->HumanBubbleOwner->GetAbilitySystemComponent()->SetNumericAttributeBase(UBubbleAttributeSet::GetEffectivenessAttribute(), CurrentEffectiveness);
-		FlatBubble->HumanBubbleOwner->UnbindAllInputBindings();
 
 		//restore arm
+	}
+	else
+	{
+		//pop
 	}
 
 	AInGameHUD* HUD = Cast<AInGameHUD>(PlayerCont->GetHUD());
 	if (IsValid(HUD))
 	{
-		HUD->ToggleInteractionWidget(true);
+		HUD->ShowInteractionWidget();
 	}
 
-	FlatBubble->UnbindAllInputBindings();
+	FlatBubble->Client_UnbindMappingContext();
 	PlayerCont->Possess(FlatBubble->HumanBubbleOwner);
+	FlatBubble->HumanBubbleOwner->Client_BindMappingContext();
 
 	FlatBubble->Destroy();
 }

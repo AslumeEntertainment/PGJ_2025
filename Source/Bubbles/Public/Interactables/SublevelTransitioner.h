@@ -19,6 +19,9 @@ protected:
 	FVector SublevelStartingLocation;
 
 	UPROPERTY(EditAnywhere, Category = "SublevelInfo")
+	FRotator FlatBubbleSpawnRotation;
+
+	UPROPERTY(EditAnywhere, Category = "SublevelInfo")
 	TSubclassOf<AFlatBubbleCharacter> FlatBubbleClass;
 
 	UPROPERTY(EditInstanceOnly, Category = "SublevelInfo")

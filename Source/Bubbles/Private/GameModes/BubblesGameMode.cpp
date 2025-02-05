@@ -150,8 +150,6 @@ void ABubblesGameMode::EndGame() //tuka trqbva da podadesh na playerite widgeti 
 void ABubblesGameMode::OnCleanPoints(int points)
 {
 	OnCleanerPointUpdate.Broadcast(points);
-
-	
 }
 
 void ABubblesGameMode::OnContaminPoints(int points)
