@@ -49,8 +49,6 @@ protected:
 
 	FTimerHandle CleaningPeriodTimer;
 
-	void SetCleanness(int NewValue, bool bCanBypass = false);
-
 	UFUNCTION()
 	void OnRep_Cleanness();
 
@@ -58,7 +56,7 @@ protected:
 
 	void ProgressCleaning();
 
-	void StopInteraction();
+	void StopInteraction(bool GiveEnregy=false);
 
 	virtual void InteractRequest(AController* InteractingCharacter) override;
 
@@ -66,6 +64,16 @@ protected:
 public:
 	int GetNetWorth();
 	int GetActualPoints();
+
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int GetCurrentCleanness() { return Cleanness; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int GetMaxCleanness() { return MaxCleanness; }
+
+	UFUNCTION(BlueprintCallable)
+	void SetCleanness(int NewValue, bool bCanBypass = false);
 
 
 	FVoidDataTransferSignature OnCleannessUpdated;

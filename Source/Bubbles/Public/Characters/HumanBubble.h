@@ -37,6 +37,12 @@ class AHumanBubble : public ABubbleCharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* InteractAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* AbilityAction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Ability")
+	FGameplayTagContainer AbilityTag;
+
 public:
 	AHumanBubble();
 
@@ -53,6 +59,8 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void EmitInteractionChecker() override;
+
+	void TriggerAbility();
 
 public:
 

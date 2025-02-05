@@ -35,6 +35,14 @@ public:
 
 	bool HasMaxEffectiveness() const;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes", ReplicatedUsing = OnRep_Energy)
+	FGameplayAttributeData Energy;
+	ATTRIBUTE_ACCESSORS(UBubbleAttributeSet, Energy);
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes", ReplicatedUsing = OnRep_MaxEnergy)
+	FGameplayAttributeData MaxEnergy;
+	ATTRIBUTE_ACCESSORS(UBubbleAttributeSet, MaxEnergy);
+
 protected:
 
 	UFUNCTION()
@@ -43,4 +51,10 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_MaxEffectiveness(const FGameplayAttributeData& OldMaxEffectiveness);
 
+
+	UFUNCTION()
+	virtual void OnRep_Energy(const FGameplayAttributeData& OldEnergy);
+
+	UFUNCTION()
+	virtual void OnRep_MaxEnergy(const FGameplayAttributeData& OldMaxEnergy);
 };
