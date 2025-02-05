@@ -14,6 +14,8 @@ void UBubbleAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 
 	DOREPLIFETIME_CONDITION_NOTIFY(UBubbleAttributeSet, Effectiveness, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UBubbleAttributeSet, MaxEffectiveness, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UBubbleAttributeSet, Energy, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UBubbleAttributeSet, MaxEnergy, COND_None, REPNOTIFY_Always);
 }
 
 void UBubbleAttributeSet::PostAttributeBaseChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue) const
@@ -70,4 +72,14 @@ void UBubbleAttributeSet::OnRep_Effectiveness(const FGameplayAttributeData& OldE
 void UBubbleAttributeSet::OnRep_MaxEffectiveness(const FGameplayAttributeData& OldMaxEffectiveness)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UBubbleAttributeSet, MaxEffectiveness, OldMaxEffectiveness);
+}
+
+void UBubbleAttributeSet::OnRep_Energy(const FGameplayAttributeData& OldEnergy)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UBubbleAttributeSet, Energy, OldEnergy);
+}
+
+void UBubbleAttributeSet::OnRep_MaxEnergy(const FGameplayAttributeData& OldMaxEnergy)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UBubbleAttributeSet, MaxEnergy, OldMaxEnergy);
 }
