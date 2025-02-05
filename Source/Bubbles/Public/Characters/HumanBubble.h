@@ -48,6 +48,9 @@ protected:
 public:
 
 	UPROPERTY(EditDefaultsOnly)
+	UMaterialInterface* FlatBubbleMaterial;
+
+	UPROPERTY(EditDefaultsOnly)
 	UAnimMontage* InteractAnimation;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

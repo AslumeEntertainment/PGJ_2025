@@ -45,7 +45,7 @@ void AFlatBubbleCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
-	SetActorRotation(FRotator(0, 0, 0));
+	//SetActorRotation(FRotator(0, 0, 0));
 	InteractionCapsule->OnComponentBeginOverlap.AddDynamic(this, &AFlatBubbleCharacter::OnInteractionCapsuleBeginOverlap);
 }
 
@@ -73,4 +73,9 @@ void AFlatBubbleCharacter::OnInteractionCapsuleBeginOverlap(UPrimitiveComponent*
 	{
 		TriggerInteraction();
 	}
+}
+
+void AFlatBubbleCharacter::NetMulticast_SetFlatBubbleMaterial_Implementation(UMaterialInterface* FlatBubbleMaterial)
+{
+	GetMesh()->SetMaterial(0, FlatBubbleMaterial);
 }

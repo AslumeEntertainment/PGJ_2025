@@ -45,17 +45,20 @@ void ASublevelTransitioner::InteractRequest(AController* InteractingCharacter)
 	FActorSpawnParameters SpawnParams = FActorSpawnParameters();
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-	AFlatBubbleCharacter* FlatBubble = World->SpawnActor<AFlatBubbleCharacter>(FlatBubbleClass, SublevelStartingLocation, FRotator(0, 0, 0), SpawnParams);
+	AFlatBubbleCharacter* FlatBubble = World->SpawnActor<AFlatBubbleCharacter>(FlatBubbleClass, SublevelStartingLocation, FlatBubbleSpawnRotation, SpawnParams);
 	if (IsValid(FlatBubble) == false)
 	{
 		UE_LOG(LogTemp, Error, TEXT("ASublevelTransitioner::InteractRequest IsValid(FlatBubble) == false"));
 		return;
 	}
+	FlatBubble->NetMulticast_SetFlatBubbleMaterial(PlayerPawn->FlatBubbleMaterial);
 
 	PlayerPawn->Client_UnbindMappingContext();
 	PlayerCont->Possess(FlatBubble);
 	FlatBubble->Client_BindMappingContext();
+
 	PlayerCont->SetViewTargetWithBlend(SublevelCamera);
+	PlayerCont->ClientSetRotation(FlatBubbleSpawnRotation);
 
 	float CurrentEffectiveness = PlayerPawn->GetAbilitySystemComponent()->GetNumericAttributeBase(UBubbleAttributeSet::GetEffectivenessAttribute());
 	FlatBubble->GetAbilitySystemComponent()->SetNumericAttributeBase(UBubbleAttributeSet::GetEffectivenessAttribute(), CurrentEffectiveness);
