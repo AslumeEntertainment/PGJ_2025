@@ -14,12 +14,6 @@ AFlatBubbleCharacter::AFlatBubbleCharacter()
 	InteractionCapsule->SetupAttachment(GetRootComponent());
 }
 
-void AFlatBubbleCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
 void AFlatBubbleCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -59,7 +53,6 @@ void AFlatBubbleCharacter::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
 
-	SetActorRotation(FRotator(0, 0, 0));
 	InteractionCapsule->OnComponentBeginOverlap.AddDynamic(this, &AFlatBubbleCharacter::OnInteractionCapsuleBeginOverlap);
 }
 

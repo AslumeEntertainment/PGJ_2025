@@ -74,4 +74,5 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FFloatTransferSignature OnProgressUpdate;
+
 };

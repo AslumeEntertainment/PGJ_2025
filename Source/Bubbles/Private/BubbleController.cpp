@@ -32,7 +32,7 @@ void ABubbleController::OnPossess(APawn* InPawn)
 	AInGameHUD* InGameHUD = Cast<AInGameHUD>(GetHUD());
 	if (IsValid(InGameHUD) == false)
 	{
-		UE_LOG(LogTemp, Error, TEXT("ABubbleController::OnPossess IsValid(InGameHUD) == false"))
+		//UE_LOG(LogTemp, Error, TEXT("ABubbleController::OnPossess IsValid(InGameHUD) == false"))
 		return;
 	}
 	InGameHUD->ShowInteractionWidget();
@@ -47,14 +47,14 @@ void ABubbleController::OnSessionMessegeReceived(FText Messege)//_Implementation
 
 void ABubbleController::UpdateRemainingTime_Implementation(int value)
 {
-	UE_LOG(LogTemp, Error, TEXT("%s: Remaining Time %d"), *GetName(), value);
+	//UE_LOG(LogTemp, Error, TEXT("%s: Remaining Time %d"), *GetName(), value);
 	OnCooldownUpdate.Broadcast(value);
 }
 
 void ABubbleController::HideStartingWidget_Implementation()
 {
-	UE_LOG(LogTemp, Warning, TEXT("%s: Client Hiding Widget:"), *GetName());
 	OnGameStart.Broadcast();
+	UE_LOG(LogTemp, Warning, TEXT("%s: Client Hiding Widget:"), *GetName());
 }
 
 void ABubbleController::ShowEndingWidget_Implementation(int value)

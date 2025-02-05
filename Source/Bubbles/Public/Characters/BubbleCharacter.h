@@ -81,18 +81,17 @@ protected:
 
 public:
 
-	virtual void PossessedBy(AController* NewController) override;
-
-	virtual void UnPossessed() override;
-
-	UFUNCTION(Client, Reliable)
-	void Client_OnUnPossessed();
-
 	void InitCharacterDefaults();
+
+	virtual void PossessedBy(AController* NewController) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void UnbindAllInputBindings();
+	UFUNCTION(Client, Reliable)
+	void Client_BindMappingContext();
+
+	UFUNCTION(Client, Reliable)
+	void Client_UnbindMappingContext();
 
 	UFUNCTION()
 	virtual void Move(const FInputActionValue& Value);

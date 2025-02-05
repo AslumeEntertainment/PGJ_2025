@@ -21,13 +21,6 @@ void ASublevelTransitioner::InteractRequest(AController* InteractingCharacter)
 		return;
 	}
 
-	UWorld* World = GetWorld();
-	if (IsValid(World) == false)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ASublevelTransitioner::InteractRequest IsValid(World) == false"));
-		return;
-	}
-
 	AHumanBubble* PlayerPawn = Cast<AHumanBubble>(InteractingCharacter->GetPawn());
 	if(IsValid(PlayerPawn) == false)
 	{
@@ -42,6 +35,13 @@ void ASublevelTransitioner::InteractRequest(AController* InteractingCharacter)
 		return;
 	}
 
+	UWorld* World = GetWorld();
+	if (IsValid(World) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ASublevelTransitioner::InteractRequest IsValid(World) == false"));
+		return;
+	}
+
 	FActorSpawnParameters SpawnParams = FActorSpawnParameters();
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
@@ -52,8 +52,9 @@ void ASublevelTransitioner::InteractRequest(AController* InteractingCharacter)
 		return;
 	}
 
-	//PlayerPawn->UnbindAllInputBindings();
+	PlayerPawn->Client_UnbindMappingContext();
 	PlayerCont->Possess(FlatBubble);
+	FlatBubble->Client_BindMappingContext();
 	PlayerCont->SetViewTargetWithBlend(SublevelCamera);
 
 	float CurrentEffectiveness = PlayerPawn->GetAbilitySystemComponent()->GetNumericAttributeBase(UBubbleAttributeSet::GetEffectivenessAttribute());
