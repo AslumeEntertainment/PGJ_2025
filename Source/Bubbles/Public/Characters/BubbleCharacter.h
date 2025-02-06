@@ -12,6 +12,7 @@
 
 #include "BubbleCharacter.generated.h"
 
+class IInteractable;
 class UMaterialInterface;
 class UAbilitySystemComponent;
 class UBubbleAttributeSet;
@@ -80,6 +81,8 @@ protected:
 	void TriggerInteraction();
 
 public:
+
+	void UpdateInteractionText(FText InteractableName, bool bCanInteract);
 
 	void InitCharacterDefaults();
 

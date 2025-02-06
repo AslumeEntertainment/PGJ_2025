@@ -3,13 +3,14 @@
 
 #include "Interactables/PaintableItem.h"
 
-#include "AbilitySystemComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
 #include "Net/UnrealNetwork.h"
-#include "Characters/HumanBubble.h"
 
-#include "BubbleController.h"
 #include "GAS/BubbleAttributeSet.h"
+#include "Characters/HumanBubble.h"
+#include "BubbleController.h"
+
 
 void APaintableItem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -39,6 +40,7 @@ void APaintableItem::SetCleanness(int NewValue, bool bCanBypass)
 		}
 	}
 
+	Cleanness = FMath::Clamp(Cleanness, -MaxCleanness, MaxCleanness);
 	UE_LOG(LogTemp, Warning, TEXT("Cleaning - Cleanness: %d"), Cleanness);
 
 	UpdateTexture();
@@ -74,6 +76,7 @@ void APaintableItem::ProgressCleaning()
 
 	SetCleanness(Cleanness + AttributeSet->GetEffectiveness());
 	
+	//UpdateInteractionText(InteractableActor);
 
 	if ((FMath::Abs(Cleanness) >= MaxCleanness && FMath::Sign(AttributeSet->GetEffectiveness()) == FMath::Sign(Cleanness)) )
 	{
@@ -158,5 +161,12 @@ int APaintableItem::GetActualPoints()
 {
 	if (FMath::Abs(Cleanness) < MaxCleanness) return 0;
 	return FMath::Sign(Cleanness) * PointMultiplier;
+}
+
+FText APaintableItem::GetInteractableName()
+{
+	float CleannesPercent = float(Cleanness + MaxCleanness) / float(2 * MaxCleanness);
+	FString InteractMessage = ItemName.ToString() + " - " + FString::FromInt(CleannesPercent*100) + "%";
+	return FText::FromString(InteractMessage);
 }
 

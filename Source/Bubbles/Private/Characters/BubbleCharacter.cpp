@@ -89,20 +89,23 @@ bool ABubbleCharacter::CheckForInteractables(FHitResult HitResult)
 	{
 		if (FocusedInteractableObject == nullptr)
 		{
+			UpdateInteractionText(FText::FromString(""), false);
 			return false;
 		}
 		UActorComponent* InteractableMeshComponent = Cast<AActor>(FocusedInteractableObject)->GetComponentByClass(UMeshComponent::StaticClass());
 		if (Cast<UMeshComponent>(InteractableMeshComponent))
 		{
+			UpdateInteractionText(FText::FromString(""), false);
 			Cast<UMeshComponent>(InteractableMeshComponent)->SetOverlayMaterial(nullptr);
 		}
 
-		InteractIndicationTextDelegate.Broadcast(FText::FromString(""));
+		UpdateInteractionText(FText::FromString(""), false);
 		Server_SetFocusedInteractable(nullptr);
 		return false;
 	}
 	if (!InteractableActor->bCanInteract(GetController()))
 	{
+		UpdateInteractionText(InteractableActor->GetInteractableName(), false);
 		return false;
 	}
 	if (FocusedInteractableObject != nullptr)
@@ -120,15 +123,30 @@ bool ABubbleCharacter::CheckForInteractables(FHitResult HitResult)
 		HitMeshComponent->SetOverlayMaterial(InteractableOverlayMaterial);
 	}
 
-	InteractIndicationTextDelegate.Broadcast(FText::FromString("E " + InteractableActor->GetInteractableName().ToString()));
 	Server_SetFocusedInteractable(HitActor);
+	UpdateInteractionText(InteractableActor->GetInteractableName(), true);
 	return true;
 }
 
 void ABubbleCharacter::TriggerInteraction()
 {
+	UE_LOG(LogTemp, Warning, TEXT("%s: Interact"), *GetName());
+
 	FGameplayEventData Data = FGameplayEventData();
 	AbilitySystemComponent->HandleGameplayEvent(InteractionAbilityTag, &Data);
+}
+
+void ABubbleCharacter::UpdateInteractionText(FText InteractableName, bool bCanInteract)
+{
+	if (bCanInteract)
+	{
+		InteractIndicationTextDelegate.Broadcast(FText::FromString("E " + InteractableName.ToString()));
+	}
+	else
+	{
+		InteractIndicationTextDelegate.Broadcast(InteractableName);
+	}
+	
 }
 
 void ABubbleCharacter::InitCharacterDefaults()

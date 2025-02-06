@@ -15,9 +15,11 @@ class BUBBLES_API APaintableItem : public AItemBase
 	GENERATED_BODY()
 	
 public:
+
 	APaintableItem();
 
 private:
+
 	UPROPERTY()
 	ABubbleController* InteractingPlayer;
 
@@ -61,10 +63,14 @@ protected:
 	virtual void InteractRequest(AController* InteractingCharacter) override;
 
 	virtual bool bCanInteract(AController* InteractingCharacter) override;
+
 public:
+
 	int GetNetWorth();
+
 	int GetActualPoints();
 
+	virtual FText GetInteractableName() override;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int GetCurrentCleanness() { return Cleanness; }
