@@ -75,6 +75,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int GetCurrentCleanness() { return Cleanness; }
 
+	UFUNCTION(BlueprintCallable)
+	float GetCurrentCleannessPercent();
+
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int GetMaxCleanness() { return MaxCleanness; }
 

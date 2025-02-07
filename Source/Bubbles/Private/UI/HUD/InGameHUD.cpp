@@ -10,7 +10,7 @@
 #include "UI/Widgets/GameOverWidget.h"
 #include "UI/Widgets/LoadingScreen.h"
 #include "UI/Widgets/InGameOverlay.h"
-#include "Characters/BubbleCharacter.h"
+#include "Characters/HumanBubble.h"
 #include "BubbleController.h"
 
 
@@ -45,6 +45,30 @@ void AInGameHUD::BeginPlay()
 	}
 
 	ShowLoadingScreen(FText::FromString("Waiting for all players"));
+}
+
+void AInGameHUD::BindPlayerDelegatesToUI()
+{
+	if (IsValid(InGameOverlay) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AInGameHUD::BindPlayerDelegatesToUI IsValid(InGameOverlay) == false"));
+		return;
+	}
+
+	AHumanBubble* HumanBubble = Cast<AHumanBubble>(PlayerOwner->GetPawn());
+	if (IsValid(HumanBubble) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AInGameHUD::BindPlayerDelegatesToUI IsValid(HumanBubble) == false"));
+		return;
+	}
+	if (HumanBubble->OnEffectivenessUpdated.IsBound() == false)
+	{
+		HumanBubble->OnEffectivenessUpdated.AddDynamic(InGameOverlay, &UInGameOverlay::SetEffectivenessPercent);
+	}
+	if (HumanBubble->OnEnergyUpdated.IsBound() == false)
+	{
+		HumanBubble->OnEnergyUpdated.AddDynamic(InGameOverlay, &UInGameOverlay::SetEnergyPercent);
+	}
 }
 
 void AInGameHUD::ShowInGameOverlay()

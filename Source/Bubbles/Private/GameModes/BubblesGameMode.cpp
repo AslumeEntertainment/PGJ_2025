@@ -7,6 +7,8 @@
 #include "Managers/PaintableItemSpawner.h"
 #include "UObject/ConstructorHelpers.h"
 
+#include "UI/HUD/InGameHUD.h"
+
 ABubblesGameMode::ABubblesGameMode()
 {
 
@@ -116,7 +118,6 @@ void ABubblesGameMode::PrepareGame()
 		}
 		PlayersArray[i]->Possess(Char);
 	}
-	
 }
 
 void ABubblesGameMode::StartGame()

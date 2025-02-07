@@ -32,3 +32,22 @@ void UInGameOverlay::SetGameProgress(float GameProgress)
 {
 	GameProgressBar->SetPercent(GameProgress);
 }
+
+void UInGameOverlay::SetEffectivenessPercent(float EffectivenessPercent)
+{
+	if (EffectivenessPercent > 0)
+	{
+		EffectivenessProgressBar->SetFillColorAndOpacity(GameProgressBar->GetFillColorAndOpacity());
+	}
+	else
+	{
+		EffectivenessProgressBar->SetFillColorAndOpacity(TXT_ContaminatorScore->GetColorAndOpacity().GetSpecifiedColor());
+	}
+	EffectivenessProgressBar->SetPercent(FMath::Abs(EffectivenessPercent));
+}
+
+void UInGameOverlay::SetEnergyPercent(float EnergyPercent)
+{
+	EnergyProgressBar->SetPercent(EnergyPercent);
+}
+

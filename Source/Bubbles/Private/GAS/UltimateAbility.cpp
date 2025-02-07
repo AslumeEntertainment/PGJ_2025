@@ -8,8 +8,9 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "AbilitySystemComponent.h"
-#include "Blueprint/UserWidget.h"
+#include "NiagaraFunctionLibrary.h"
 
+#include "UI/Widgets/UltimateAbilityWidget.h"
 #include "Interactables/PaintableItem.h"
 #include "Characters/HumanBubble.h"
 #include "GAS/BubbleAttributeSet.h"
@@ -41,9 +42,10 @@ void UUltimateAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, 
 			return;
 		}
 
-		UUserWidget* AbilityWidget = CreateWidget<UUserWidget>(UGameplayStatics::GetGameInstance(World), AbilityWidgetClass);
+		UUltimateAbilityWidget* AbilityWidget = CreateWidget<UUltimateAbilityWidget>(UGameplayStatics::GetGameInstance(World), AbilityWidgetClass);
 		if (IsValid(AbilityWidget))
 		{
+			AbilityWidget->SetUltimateAbilityText(AbilityWidgetTopText, AbilityWidgetBottomText, AbilityWidgetTextColor);
 			AbilityWidget->AddToViewport();
 		}
 	}
@@ -77,13 +79,19 @@ void UUltimateAbility::OnEventReceived(FGameplayEventData Payload)
 		return;
 	}
 
+	if (IsValid(AbilityNiagaraEffect))
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, AbilityNiagaraEffect, Player->GetActorLocation(),
+			Player->GetActorRotation());
+	}
+
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
 	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic));
 	
 	TArray<AActor*> ActorsToIgnore;
 	TArray<AActor*> OutActors;
 
-	UKismetSystemLibrary::DrawDebugSphere(World, Player->GetActorLocation(), AbilityRadius);
+	//UKismetSystemLibrary::DrawDebugSphere(World, Player->GetActorLocation(), AbilityRadius);
 
 	if(UKismetSystemLibrary::SphereOverlapActors(World, Player->GetActorLocation(), AbilityRadius, ObjectTypes, APaintableItem::StaticClass(), 
 		ActorsToIgnore, OutActors) == false) return;

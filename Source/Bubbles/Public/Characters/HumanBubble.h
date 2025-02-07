@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Characters/BubbleCharacter.h"
+
+#include "Headers/GeneralDelegates.h"
+
 #include "HumanBubble.generated.h"
 
 class USpringArmComponent;
@@ -16,6 +19,8 @@ UCLASS(config=Game)
 class AHumanBubble : public ABubbleCharacter
 {
 	GENERATED_BODY()
+
+	bool bAreAttributesBoundToUI = false;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
@@ -35,17 +40,23 @@ class AHumanBubble : public ABubbleCharacter
 	UPROPERTY(EditDefaultsOnly, Category = "Ability")
 	FGameplayTagContainer AbilityTag;
 
+	UFUNCTION(BlueprintCallable, Client, Reliable)
+	void Client_OnEffectivenessUpdated(float CurrentEffectiveness, float MaxEffectiveness);
+
+	UFUNCTION(BlueprintCallable, Client, Reliable)
+	void Client_OnEnergyUpdated(float CurrentEnergy, float MaxEnergy);
+
 public:
 
 	AHumanBubble();
 
 protected:
 
+	virtual void PossessedBy(AController* NewController) override;
+
 	virtual void Move(const FInputActionValue& Value) override;
 
 	void Look(const FInputActionValue& Value);	
-
-protected:
 	
 	virtual void Tick(float DeltaTime) override;
 
@@ -66,5 +77,9 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	FFloatTransferSignature OnEffectivenessUpdated;
+	FFloatTransferSignature OnEnergyUpdated;
+
 };
 

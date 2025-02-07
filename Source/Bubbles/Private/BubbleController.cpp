@@ -6,6 +6,7 @@
 #include "Headers/GeneralDelegates.h"
 #include "Net/UnrealNetwork.h"
 
+#include "Characters/HumanBubble.h"
 #include "UI/HUD/InGameHUD.h"	
 
 void ABubbleController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -19,9 +20,9 @@ void ABubbleController::Client_SetInputMode_Implementation(EInputMode  InputMode
 {
 	switch (InputMode)
 	{
-	case EInputMode::GameOnly: SetInputMode(FInputModeGameOnly()); IsInputLocked = false;  break;
-	case EInputMode::GameAndUI: SetInputMode(FInputModeGameAndUI()); IsInputLocked = false; break;
-	case EInputMode::UIOnly: SetInputMode(FInputModeUIOnly()); IsInputLocked = true; break;
+		case EInputMode::GameOnly: SetInputMode(FInputModeGameOnly()); IsInputLocked = false;  break;
+		case EInputMode::GameAndUI: SetInputMode(FInputModeGameAndUI()); IsInputLocked = false; break;
+		case EInputMode::UIOnly: SetInputMode(FInputModeUIOnly()); IsInputLocked = true; break;
 	}
 }
 void ABubbleController::OnPossess(APawn* InPawn)
@@ -32,10 +33,18 @@ void ABubbleController::OnPossess(APawn* InPawn)
 	AInGameHUD* InGameHUD = Cast<AInGameHUD>(GetHUD());
 	if (IsValid(InGameHUD) == false)
 	{
-		//UE_LOG(LogTemp, Error, TEXT("ABubbleController::OnPossess IsValid(InGameHUD) == false"))
 		return;
 	}
 	InGameHUD->ShowInteractionWidget();
+	
+	if (Cast<AHumanBubble>(InPawn))
+	{
+		InGameHUD->BindPlayerDelegatesToUI();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("InPawn ne e Human bubble"))
+	}
 }
 
 void ABubbleController::OnSessionMessegeReceived(FText Messege)//_Implementation(FText Messege)

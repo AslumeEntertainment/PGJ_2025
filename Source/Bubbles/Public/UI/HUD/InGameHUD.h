@@ -11,6 +11,7 @@ class ULoadingScreen;
 class UInteractionWidget;
 class UGameOverWidget;
 
+
 UCLASS()
 class BUBBLES_API AInGameHUD : public AHUD
 {
@@ -45,6 +46,9 @@ protected:
 	UGameOverWidget* GameOverWidget;
 
 public:
+
+	UFUNCTION()
+	void BindPlayerDelegatesToUI();
 
 	UFUNCTION()
 	void ShowInGameOverlay();

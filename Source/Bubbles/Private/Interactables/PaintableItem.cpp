@@ -39,8 +39,7 @@ void APaintableItem::SetCleanness(int NewValue, bool bCanBypass)
 			Cleanness += FMath::Sign(Cleanness) * CleannessShield;
 		}
 	}
-
-	Cleanness = FMath::Clamp(Cleanness, -MaxCleanness, MaxCleanness);
+	
 	UE_LOG(LogTemp, Warning, TEXT("Cleaning - Cleanness: %d"), Cleanness);
 
 	UpdateTexture();
@@ -53,11 +52,11 @@ void APaintableItem::OnRep_Cleanness()
 
 void APaintableItem::UpdateTexture()
 {
-	/*switch (Cleanness)
+	UMaterialInstanceDynamic* DynamicMaterial = BaseMesh->CreateDynamicMaterialInstance(0);
+	if (DynamicMaterial)
 	{
-	default:
-		break;//update textures
-	}*/
+		DynamicMaterial->SetScalarParameterValue("Cleanness", GetCurrentCleannessPercent());
+	}
 }
 
 void APaintableItem::ProgressCleaning()
@@ -165,8 +164,14 @@ int APaintableItem::GetActualPoints()
 
 FText APaintableItem::GetInteractableName()
 {
-	float CleannesPercent = float(Cleanness + MaxCleanness) / float(2 * MaxCleanness);
-	FString InteractMessage = ItemName.ToString() + " - " + FString::FromInt(CleannesPercent*100) + "%";
+	FString InteractMessage = ItemName.ToString() + " - " + FString::FromInt(GetCurrentCleannessPercent() * 100) + "%";
 	return FText::FromString(InteractMessage);
+}
+
+float APaintableItem::GetCurrentCleannessPercent()
+{
+	int TrueCleanness = FMath::Clamp(Cleanness, -MaxCleanness, MaxCleanness);
+
+	return float(TrueCleanness + MaxCleanness) / float(2 * MaxCleanness);
 }
 
