@@ -37,7 +37,7 @@ class AHumanBubble : public ABubbleCharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* AbilityAction;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Ability")
+	UPROPERTY(EditDefaultsOnly, Category = "CustomValues|Ability")
 	FGameplayTagContainer AbilityTag;
 
 	UFUNCTION(BlueprintCallable, Client, Reliable)
@@ -66,10 +66,13 @@ protected:
 
 public:
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "CustomValues|Animation")
 	UMaterialInterface* FlatBubbleMaterial;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "CustomValues|Animation")
+	UAnimMontage* CleanAnimation;
+
+	UPROPERTY(EditDefaultsOnly, Category = "CustomValues|Animation")
 	UAnimMontage* InteractAnimation;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -77,6 +80,9 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	UFUNCTION(NetMulticast, Reliable)
+	void NetMulticast_PlayCharacterAnimation(UAnimMontage* Animation, bool Looping);
 
 	FFloatTransferSignature OnEffectivenessUpdated;
 	FFloatTransferSignature OnEnergyUpdated;

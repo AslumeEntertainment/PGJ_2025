@@ -8,6 +8,7 @@
 #include "PaintableItem.generated.h"
 
 class ABubbleController;
+class UNiagaraSystem;
 
 UCLASS()
 class BUBBLES_API APaintableItem : public AItemBase
@@ -49,12 +50,24 @@ protected:
 	UPROPERTY(Replicated)
 	bool IsLocked = false;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Visuals")
+	UNiagaraSystem* CleannessUpEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Visuals")
+	UNiagaraSystem* CleannessDownEffect;
+
 	FTimerHandle CleaningPeriodTimer;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UStaticMeshComponent* ShieldMesh;
 
 	UFUNCTION()
 	void OnRep_Cleanness();
 
 	void UpdateTexture();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void NetMulticast_ShowEffect(UNiagaraSystem* CleannessEffect);
 
 	void ProgressCleaning();
 

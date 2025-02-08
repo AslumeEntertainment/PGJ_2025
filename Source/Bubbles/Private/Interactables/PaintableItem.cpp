@@ -3,8 +3,10 @@
 
 #include "Interactables/PaintableItem.h"
 
+#include "Components/StaticMeshComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Net/UnrealNetwork.h"
 
 #include "GAS/BubbleAttributeSet.h"
@@ -23,6 +25,9 @@ void APaintableItem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 APaintableItem::APaintableItem()
 {
 	bReplicates = true;
+
+	ShieldMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ShieldMesh"));
+	ShieldMesh->SetupAttachment(GetRootComponent());
 }
 
 void APaintableItem::SetCleanness(int NewValue, bool bCanBypass)
@@ -57,11 +62,47 @@ void APaintableItem::UpdateTexture()
 	{
 		DynamicMaterial->SetScalarParameterValue("Cleanness", GetCurrentCleannessPercent());
 	}
+
+	UMaterialInstanceDynamic* ShieldDynamicMaterial = ShieldMesh->CreateDynamicMaterialInstance(0);
+	if (ShieldDynamicMaterial)
+	{
+		if (GetCurrentCleannessPercent() >= 1.f || GetCurrentCleannessPercent() <= 0.f)
+		{
+			ShieldDynamicMaterial->SetScalarParameterValue("Sign", FMath::Sign(Cleanness));
+		}
+		else
+		{
+			ShieldDynamicMaterial->SetScalarParameterValue("Sign", 0);
+		}
+	}
+}
+
+void APaintableItem::NetMulticast_ShowEffect_Implementation(UNiagaraSystem* CleannessEffect)
+{
+	UWorld* World = GetWorld();
+	if (IsValid(World) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("APaintableItem::ShowEffect IsValid(World) == false"));
+		return;
+	}
+	if (IsValid(CleannessEffect) == false)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("APaintableItem::ShowEffect IsValid(CleannessEffect) == false"));
+		return;
+	}
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, CleannessEffect, GetActorLocation(), GetActorRotation());
 }
 
 void APaintableItem::ProgressCleaning()
 {
 	Iterations-= CleaningInterval;
+
+	AHumanBubble* PlayerPawn = Cast<AHumanBubble>(InteractingPlayer->GetPawn());
+	if (IsValid(PlayerPawn) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("APaintableItem::ProgressCleaning IsValid(PlayerPawn) == false"));
+		return;
+	}
 
 	UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(InteractingPlayer->GetPawn());
 
@@ -75,7 +116,10 @@ void APaintableItem::ProgressCleaning()
 
 	SetCleanness(Cleanness + AttributeSet->GetEffectiveness());
 	
-	//UpdateInteractionText(InteractableActor);
+	PlayerPawn->UpdateInteractionText(GetInteractableName(), true);
+
+	if (AttributeSet->GetEffectiveness() > 0) NetMulticast_ShowEffect(CleannessUpEffect);
+	else if (AttributeSet->GetEffectiveness() < 0) NetMulticast_ShowEffect(CleannessDownEffect);
 
 	if ((FMath::Abs(Cleanness) >= MaxCleanness && FMath::Sign(AttributeSet->GetEffectiveness()) == FMath::Sign(Cleanness)) )
 	{
@@ -121,11 +165,17 @@ void APaintableItem::InteractRequest(AController* InteractingCharacter)
 	InteractingPlayer = Cast<ABubbleController>(InteractingCharacter);
 	InteractingPlayer->Client_SetInputMode(EInputMode::UIOnly);
 
+	AHumanBubble* PlayerPawn = Cast<AHumanBubble>(InteractingCharacter->GetPawn());
+	if (IsValid(PlayerPawn))
+	{
+		PlayerPawn->RotateTowardsActor(GetWorld(), this);
+		PlayerPawn->NetMulticast_PlayCharacterAnimation(PlayerPawn->CleanAnimation, true);
+	}
+
 	//SetOwner(InteractingPlayer);
 	IsLocked = true;
 	UE_LOG(LogTemp, Warning, TEXT("Starting Clean - Cleanness: %d Step:%d"), Cleanness, Iterations);
 	
-
 	Iterations = CleaningTime;
 
 	GetWorldTimerManager().SetTimer(CleaningPeriodTimer, this, &APaintableItem::ProgressCleaning, CleaningInterval, true, CleaningInterval);

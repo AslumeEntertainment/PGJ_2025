@@ -138,6 +138,16 @@ void AHumanBubble::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	}
 }
 
+void AHumanBubble::NetMulticast_PlayCharacterAnimation_Implementation(UAnimMontage* Animation, bool Looping)
+{
+	if (IsValid(Animation) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AHumanBubble::PlayCharacterAnimation IsValid(Animation) == false"));
+		return;
+	}
+	GetMesh()->PlayAnimation(Animation, Looping);
+}
+
 void AHumanBubble::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);

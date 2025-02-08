@@ -41,10 +41,6 @@ void ABubbleController::OnPossess(APawn* InPawn)
 	{
 		InGameHUD->BindPlayerDelegatesToUI();
 	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("InPawn ne e Human bubble"))
-	}
 }
 
 void ABubbleController::OnSessionMessegeReceived(FText Messege)//_Implementation(FText Messege)

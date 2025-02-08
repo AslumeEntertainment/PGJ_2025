@@ -79,11 +79,7 @@ void UUltimateAbility::OnEventReceived(FGameplayEventData Payload)
 		return;
 	}
 
-	if (IsValid(AbilityNiagaraEffect))
-	{
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, AbilityNiagaraEffect, Player->GetActorLocation(),
-			Player->GetActorRotation());
-	}
+	Player->NetMulticast_ShowEffectAtCharacterLocation(AbilityNiagaraEffect);
 
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
 	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic));
@@ -91,11 +87,9 @@ void UUltimateAbility::OnEventReceived(FGameplayEventData Payload)
 	TArray<AActor*> ActorsToIgnore;
 	TArray<AActor*> OutActors;
 
-	//UKismetSystemLibrary::DrawDebugSphere(World, Player->GetActorLocation(), AbilityRadius);
-
 	if(UKismetSystemLibrary::SphereOverlapActors(World, Player->GetActorLocation(), AbilityRadius, ObjectTypes, APaintableItem::StaticClass(), 
 		ActorsToIgnore, OutActors) == false) return;
-	
+
 	float Effectiveness = Player->GetAbilitySystemComponent()->GetNumericAttributeBase(UBubbleAttributeSet::GetEffectivenessAttribute());
 
 	for (AActor* Actor : OutActors)

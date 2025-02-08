@@ -9,6 +9,7 @@
 
 #include "ItemBase.generated.h"
 
+class UStaticMeshComponent;
 
 UCLASS()
 class BUBBLES_API AItemBase : public AActor, public IInteractable

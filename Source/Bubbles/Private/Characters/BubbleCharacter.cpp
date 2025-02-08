@@ -3,17 +3,19 @@
 
 #include "Characters/BubbleCharacter.h"
 
-#include "BubbleController.h"
-#include "Interactables/Interactable.h"
-
-#include "GAS/BubbleAttributeSet.h"
-#include "AbilitySystemComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
-#include "InputActionValue.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "EnhancedInputComponent.h"
+#include "InputActionValue.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Net/UnrealNetwork.h"
+
+#include "Interactables/Interactable.h"
+#include "GAS/BubbleAttributeSet.h"
+#include "BubbleController.h"
 
 // Sets default values
 ABubbleCharacter::ABubbleCharacter()
@@ -249,6 +251,47 @@ void ABubbleCharacter::Client_UnbindMappingContext_Implementation()
 	}
 
 	InputSystem->RemoveMappingContext(DefaultMappingContext);
+}
+
+void ABubbleCharacter::NetMulticast_ShowEffectAtCharacterLocation_Implementation(UNiagaraSystem* NiagaraEffect)
+{
+	UWorld* World = GetWorld();
+	if (IsValid(World) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::NetMulticast_ShowEffectAtCharacterLocation_Implementation IsValid(World) == false"));
+		return;
+	}
+	if (IsValid(NiagaraEffect) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::NetMulticast_ShowEffectAtCharacterLocation_Implementation IsValid(AbilityNiagaraEffect) == false"));
+		return;
+	}
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, NiagaraEffect, GetActorLocation(), GetActorRotation());
+}
+
+void ABubbleCharacter::RotateTowardsActor(UWorld* World, AActor* TargetActor)
+{
+	if (IsValid(World) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::RotateTowardsActor IsValid(World) == false"));
+		return;
+	}
+
+	FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), TargetActor->GetActorLocation());
+	FRotator InterpRotation = UKismetMathLibrary::RInterpTo(GetActorRotation(), LookAtRotation, World->DeltaTimeSeconds, 20);
+	
+	if (FMath::Abs(InterpRotation.Yaw) < 0.01f)
+	{
+		return;
+	}
+	
+	SetActorRotation(FRotator(GetActorRotation().Pitch, InterpRotation.Yaw, GetActorRotation().Roll));
+
+	FTimerHandle RotateTimer;
+	FTimerDelegate RotateTimerDelegate;
+
+	RotateTimerDelegate.BindUFunction(this, FName("RotateTowardsActor"), World, TargetActor);
+	GetWorldTimerManager().SetTimer(RotateTimer, RotateTimerDelegate, 0.01f, false);
 }
 
 void ABubbleCharacter::Move(const FInputActionValue& Value)

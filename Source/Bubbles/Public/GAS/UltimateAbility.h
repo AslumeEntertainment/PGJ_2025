@@ -55,4 +55,5 @@ protected:
 
 	UFUNCTION()
 	void OnEventReceived(FGameplayEventData Payload);
+
 };

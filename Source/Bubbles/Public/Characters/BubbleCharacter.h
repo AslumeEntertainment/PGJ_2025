@@ -18,7 +18,9 @@ class UAbilitySystemComponent;
 class UBubbleAttributeSet;
 class UInputMappingContext;
 class UInputAction;
+class UNiagaraSystem;
 struct FInputActionValue;
+
 
 UCLASS(Abstract)
 class BUBBLES_API ABubbleCharacter : public ACharacter, public IAbilitySystemInterface
@@ -95,6 +97,12 @@ public:
 
 	UFUNCTION(Client, Reliable)
 	void Client_UnbindMappingContext();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void NetMulticast_ShowEffectAtCharacterLocation(UNiagaraSystem* NiagaraEffect);
+
+	UFUNCTION()
+	void RotateTowardsActor(UWorld* World, AActor* TargetActor);
 
 	UFUNCTION()
 	virtual void Move(const FInputActionValue& Value);
