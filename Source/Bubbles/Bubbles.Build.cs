@@ -18,6 +18,7 @@ public class Bubbles : ModuleRules
                 "InputCore", 
                 "EnhancedInput",
                 "OnlineSubsystem",
+                "Niagara",
                 "OnlineSubsystemUtils" 
             }
             );

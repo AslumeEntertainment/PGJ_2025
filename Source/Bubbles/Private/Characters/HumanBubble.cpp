@@ -10,12 +10,16 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+
 #include "AbilitySystemComponent.h"
+#include "GAS/BubbleAttributeSet.h"
+#include "UI/HUD/InGameHUD.h"
 
 //DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 //////////////////////////////////////////////////////////////////////////
 // ABubblesCharacter
+
 
 AHumanBubble::AHumanBubble()
 {
@@ -56,6 +60,16 @@ AHumanBubble::AHumanBubble()
 
 
 	PrimaryActorTick.bCanEverTick = true;
+}
+
+void AHumanBubble::Client_OnEffectivenessUpdated_Implementation(float CurrentEffectiveness, float MaxEffectiveness)
+{
+	OnEffectivenessUpdated.Broadcast(CurrentEffectiveness / MaxEffectiveness);
+}
+
+void AHumanBubble::Client_OnEnergyUpdated_Implementation(float CurrentEnergy, float MaxEnergy)
+{
+	OnEnergyUpdated.Broadcast(CurrentEnergy / MaxEnergy);
 }
 
 void AHumanBubble::Tick(float DeltaTime)
@@ -122,6 +136,71 @@ void AHumanBubble::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	{
 		UE_LOG(LogTemp, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+}
+
+void AHumanBubble::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	if (bAreAttributesBoundToUI == false)
+	{
+		BindCallbacksToDependencies();
+	}
+}
+
+void AHumanBubble::BindCallbacksToDependencies()
+{
+	if (IsValid(AbilitySystemComponent) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AHumanBubble::BindCallbacksToDependencies IsValid(AbilitySystemComponent) == false"));
+		return;
+	}
+	if (IsValid(AttributeSet) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AHumanBubble::BindCallbacksToDependencies IsValid(AttributeSet) == false"));
+		return;
+	}
+
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetEffectivenessAttribute()).AddLambda
+	(
+		[this](const FOnAttributeChangeData& Data)
+		{
+			Client_OnEffectivenessUpdated(Data.NewValue, AttributeSet->GetMaxEffectiveness());
+		}
+	);
+
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetEnergyAttribute()).AddLambda
+	(
+		[this](const FOnAttributeChangeData& Data)
+		{
+			Client_OnEnergyUpdated(Data.NewValue, AttributeSet->GetMaxEnergy());
+		}
+	);
+
+	bAreAttributesBoundToUI = true;
+}
+
+void AHumanBubble::BroadcastInitialValues()
+{
+	if (HasAuthority() == false)
+	{
+		FTimerHandle BroadcastInitialValuesTimerHandle;
+		GetWorldTimerManager().SetTimer(BroadcastInitialValuesTimerHandle, this, &AHumanBubble::Client_BroadcastInitialValues, 0.5f, false);
+	}
+
+	if (IsValid(AttributeSet) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AHumanBubble::BroadcastInitialValues IsValid(AttributeSet) == false"));
+		return;
+	}
+
+	Client_OnEffectivenessUpdated(AttributeSet->GetEffectiveness(), AttributeSet->GetMaxEffectiveness());
+	Client_OnEnergyUpdated(AttributeSet->GetEnergy(), AttributeSet->GetMaxEnergy());
+}
+
+void AHumanBubble::Client_BroadcastInitialValues_Implementation()
+{
+	BroadcastInitialValues();
 }
 
 void AHumanBubble::Move(const FInputActionValue& Value)

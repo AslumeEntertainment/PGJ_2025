@@ -5,18 +5,28 @@
 
 #include "Components/StaticMeshComponent.h"
 
+#include "Characters/HumanBubble.h"
+
 // Sets default values
 AItemBase::AItemBase()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
-	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Base Mesh"));
-	SetRootComponent(BaseMesh);
+	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+	SetRootComponent(Root);
+
+	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BaseMesh"));
+	BaseMesh->SetupAttachment(Root);
 }
 
 void AItemBase::InteractRequest(AController* InteractingCharacter)
 {
+	AHumanBubble* PlayerPawn = Cast<AHumanBubble>(InteractingCharacter->GetPawn());
+	if (IsValid(PlayerPawn))
+	{
+		PlayerPawn->RotateTowardsActor(GetWorld(), this);
+	}
 	UE_LOG(LogTemp, Display, TEXT("Interacted with: %s"), *ItemName.ToString());
 }
 

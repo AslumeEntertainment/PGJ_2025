@@ -10,7 +10,7 @@
 #include "UI/Widgets/GameOverWidget.h"
 #include "UI/Widgets/LoadingScreen.h"
 #include "UI/Widgets/InGameOverlay.h"
-#include "Characters/BubbleCharacter.h"
+#include "Characters/HumanBubble.h"
 #include "BubbleController.h"
 
 
@@ -36,15 +36,45 @@ void AInGameHUD::BeginPlay()
 	ABubbleController* BubbleCont = Cast<ABubbleController>(PlayerOwner);
 	if (IsValid(BubbleCont))
 	{
-		BubbleCont->OnGameStart.AddDynamic(this, &AInGameHUD::ShowInGameOverlay);
 		BubbleCont->OnCleanerPointUpdate.AddDynamic(InGameOverlay, &UInGameOverlay::SetCleanerScore);
 		BubbleCont->OnContaminatorPointUpdate.AddDynamic(InGameOverlay, &UInGameOverlay::SetContaminatorScore);
 		BubbleCont->OnProgressUpdate.AddDynamic(InGameOverlay, &UInGameOverlay::SetGameProgress);
+
+		BubbleCont->OnGameStart.AddDynamic(this, &AInGameHUD::ShowInGameOverlay);
 		BubbleCont->OnCooldownUpdate.AddDynamic(InGameOverlay, &UInGameOverlay::SetTimerValue);
 		BubbleCont->OnGameEnd.AddDynamic(this, &AInGameHUD::ShowGameOverWidget);
 	}
 
 	ShowLoadingScreen(FText::FromString("Waiting for all players"));
+}
+
+void AInGameHUD::BindPlayerDelegatesToUI()
+{
+	if (IsValid(InGameOverlay) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AInGameHUD::BindPlayerDelegatesToUI IsValid(InGameOverlay) == false"));
+		return;
+	}
+
+	AHumanBubble* HumanBubble = Cast<AHumanBubble>(PlayerOwner->GetPawn());
+	if (IsValid(HumanBubble) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AInGameHUD::BindPlayerDelegatesToUI IsValid(HumanBubble) == false"));
+		return;
+	}
+	if (HumanBubble->OnEffectivenessUpdated.IsBound() == false)
+	{
+		HumanBubble->OnEffectivenessUpdated.AddDynamic(InGameOverlay, &UInGameOverlay::SetEffectivenessPercent);
+	}
+	if (HumanBubble->OnEnergyUpdated.IsBound() == false)
+	{
+		HumanBubble->OnEnergyUpdated.AddDynamic(InGameOverlay, &UInGameOverlay::SetEnergyPercent);
+	}
+	if (HumanBubble->InteractIndicationTextDelegate.IsBound() == false)
+	{
+		HumanBubble->InteractIndicationTextDelegate.AddDynamic(InteractionWidget, &UInteractionWidget::SetInteractionText);
+	}
+	HumanBubble->BroadcastInitialValues();
 }
 
 void AInGameHUD::ShowInGameOverlay()
@@ -58,6 +88,10 @@ void AInGameHUD::ShowInGameOverlay()
 	}
 
 	InGameOverlay->AddToViewport();
+	ShowInteractionWidget();
+
+	FTimerHandle BindDelegatesTimer;
+	GetWorldTimerManager().SetTimer(BindDelegatesTimer, this, &AInGameHUD::BindPlayerDelegatesToUI, 0.01, false);
 }
 
 void AInGameHUD::ShowLoadingScreen(FText LoadingText)
@@ -82,6 +116,8 @@ void AInGameHUD::RemoveLoadingScreen()
 
 void AInGameHUD::ShowInteractionWidget()
 {
+	UE_LOG(LogTemp, Error, TEXT("AInGameHUD::ShowInteractionWidget"));
+
 	if (IsValid(InteractionWidget) == false)
 	{
 		UE_LOG(LogTemp, Error, TEXT("AInGameHUD::ShowInteractionWidget IsValid(InteractionWidget) == false"));
@@ -92,17 +128,6 @@ void AInGameHUD::ShowInteractionWidget()
 		return;
 	}
 	
-	ABubbleCharacter* BubbleCharacter = Cast<ABubbleCharacter>(PlayerOwner->GetPawn());
-	if (IsValid(BubbleCharacter) == false)
-	{
-		UE_LOG(LogTemp, Error, TEXT("AInGameHUD::ToggleInteractionWidget IsValid(BubbleCharacter) == false"));
-		return;
-	}
-	if (BubbleCharacter->InteractIndicationTextDelegate.IsBound() == false)
-	{
-		BubbleCharacter->InteractIndicationTextDelegate.AddDynamic(InteractionWidget, &UInteractionWidget::SetInteractionText);
-	}
-
 	InteractionWidget->AddToViewport();
 }
 

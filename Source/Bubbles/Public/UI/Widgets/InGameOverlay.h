@@ -28,6 +28,12 @@ protected:
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UProgressBar* GameProgressBar;
 
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UProgressBar* EffectivenessProgressBar;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UProgressBar* EnergyProgressBar;
+
 public:
 
 	UFUNCTION()
@@ -41,4 +47,10 @@ public:
 
 	UFUNCTION()
 	void SetGameProgress(float GameProgress);
+
+	UFUNCTION()
+	void SetEffectivenessPercent(float EffectivenessPercent);
+
+	UFUNCTION()
+	void SetEnergyPercent(float EnergyPercent);
 };

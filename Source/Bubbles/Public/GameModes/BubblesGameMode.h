@@ -22,6 +22,9 @@ public:
 	int PlayersNeededForSession = 2;
 
 	UPROPERTY(VisibleAnywhere)
+	int CleanerTeam = 1;
+
+	UPROPERTY(VisibleAnywhere)
 	int ContaminateorTeam = -1;
 
 	UPROPERTY(VisibleAnywhere)

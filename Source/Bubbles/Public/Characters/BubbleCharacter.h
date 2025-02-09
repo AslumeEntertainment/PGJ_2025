@@ -12,12 +12,15 @@
 
 #include "BubbleCharacter.generated.h"
 
+class IInteractable;
 class UMaterialInterface;
 class UAbilitySystemComponent;
 class UBubbleAttributeSet;
 class UInputMappingContext;
 class UInputAction;
+class UNiagaraSystem;
 struct FInputActionValue;
+
 
 UCLASS(Abstract)
 class BUBBLES_API ABubbleCharacter : public ACharacter, public IAbilitySystemInterface
@@ -81,6 +84,8 @@ protected:
 
 public:
 
+	void UpdateInteractionText(FText InteractableName, bool bCanInteract);
+
 	void InitCharacterDefaults();
 
 	virtual void PossessedBy(AController* NewController) override;
@@ -92,6 +97,18 @@ public:
 
 	UFUNCTION(Client, Reliable)
 	void Client_UnbindMappingContext();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void NetMulticast_ShowEffectAtCharacterLocation(UNiagaraSystem* NiagaraEffect);
+
+	UFUNCTION()
+	void RotateTowardsActor(UWorld* World, AActor* TargetActor);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void NetMulticast_PlayAnimationMontage(UAnimMontage* Animation);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void NetMulticast_StopAnimationMontage(UAnimMontage* Animation);
 
 	UFUNCTION()
 	virtual void Move(const FInputActionValue& Value);

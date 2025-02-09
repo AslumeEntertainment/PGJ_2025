@@ -8,6 +8,7 @@
 #include "PaintableItem.generated.h"
 
 class ABubbleController;
+class UNiagaraSystem;
 
 UCLASS()
 class BUBBLES_API APaintableItem : public AItemBase
@@ -15,9 +16,11 @@ class BUBBLES_API APaintableItem : public AItemBase
 	GENERATED_BODY()
 	
 public:
+
 	APaintableItem();
 
 private:
+
 	UPROPERTY()
 	ABubbleController* InteractingPlayer;
 
@@ -47,12 +50,24 @@ protected:
 	UPROPERTY(Replicated)
 	bool IsLocked = false;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Visuals")
+	UNiagaraSystem* CleannessUpEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Visuals")
+	UNiagaraSystem* CleannessDownEffect;
+
 	FTimerHandle CleaningPeriodTimer;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UStaticMeshComponent* ShieldMesh;
 
 	UFUNCTION()
 	void OnRep_Cleanness();
 
 	void UpdateTexture();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void NetMulticast_ShowEffect(UNiagaraSystem* CleannessEffect);
 
 	void ProgressCleaning();
 
@@ -61,20 +76,26 @@ protected:
 	virtual void InteractRequest(AController* InteractingCharacter) override;
 
 	virtual bool bCanInteract(AController* InteractingCharacter) override;
+
 public:
+
 	int GetNetWorth();
+
 	int GetActualPoints();
 
+	virtual FText GetInteractableName() override;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int GetCurrentCleanness() { return Cleanness; }
+
+	UFUNCTION(BlueprintCallable)
+	float GetCurrentCleannessPercent();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int GetMaxCleanness() { return MaxCleanness; }
 
 	UFUNCTION(BlueprintCallable)
 	void SetCleanness(int NewValue, bool bCanBypass = false);
-
 
 	FVoidDataTransferSignature OnCleannessUpdated;
 };

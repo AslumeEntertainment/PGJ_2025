@@ -3,12 +3,28 @@
 
 #include "Interactables/EffectGrantingItem.h"
 
-#include "AbilitySystemComponent.h"
+#include "GameFramework/RotatingMovementComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
 
 AEffectGrantingItem::AEffectGrantingItem()
 {
 	bReplicates = true;
+	PrimaryActorTick.bCanEverTick = true;
+
+	RotationComponent = CreateDefaultSubobject<URotatingMovementComponent>(TEXT("RotatingMovement"));
+}
+
+void AEffectGrantingItem::BeginPlay()
+{
+	Super::BeginPlay();
+	RotationComponent->RotationRate.Yaw = RotationRate;
+}
+
+void AEffectGrantingItem::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	BaseMesh->AddRelativeLocation(FVector(0, 0, FMath::Sin(GetGameTimeSinceCreation())*FloatingHeighOffsetMultiplier));
 }
 
 void AEffectGrantingItem::InteractRequest(AController* InteractingCharacter)

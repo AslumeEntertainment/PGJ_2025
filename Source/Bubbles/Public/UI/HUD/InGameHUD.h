@@ -47,6 +47,9 @@ protected:
 public:
 
 	UFUNCTION()
+	void BindPlayerDelegatesToUI();
+
+	UFUNCTION()
 	void ShowInGameOverlay();
 
 	UFUNCTION()

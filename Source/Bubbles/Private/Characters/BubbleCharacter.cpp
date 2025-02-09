@@ -3,17 +3,19 @@
 
 #include "Characters/BubbleCharacter.h"
 
-#include "BubbleController.h"
-#include "Interactables/Interactable.h"
-
-#include "GAS/BubbleAttributeSet.h"
-#include "AbilitySystemComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
-#include "InputActionValue.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "EnhancedInputComponent.h"
+#include "InputActionValue.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Net/UnrealNetwork.h"
+
+#include "Interactables/Interactable.h"
+#include "GAS/BubbleAttributeSet.h"
+#include "BubbleController.h"
 
 // Sets default values
 ABubbleCharacter::ABubbleCharacter()
@@ -89,20 +91,23 @@ bool ABubbleCharacter::CheckForInteractables(FHitResult HitResult)
 	{
 		if (FocusedInteractableObject == nullptr)
 		{
+			UpdateInteractionText(FText::FromString(""), false);
 			return false;
 		}
 		UActorComponent* InteractableMeshComponent = Cast<AActor>(FocusedInteractableObject)->GetComponentByClass(UMeshComponent::StaticClass());
 		if (Cast<UMeshComponent>(InteractableMeshComponent))
 		{
+			UpdateInteractionText(FText::FromString(""), false);
 			Cast<UMeshComponent>(InteractableMeshComponent)->SetOverlayMaterial(nullptr);
 		}
 
-		InteractIndicationTextDelegate.Broadcast(FText::FromString(""));
+		UpdateInteractionText(FText::FromString(""), false);
 		Server_SetFocusedInteractable(nullptr);
 		return false;
 	}
 	if (!InteractableActor->bCanInteract(GetController()))
 	{
+		UpdateInteractionText(InteractableActor->GetInteractableName(), false);
 		return false;
 	}
 	if (FocusedInteractableObject != nullptr)
@@ -120,15 +125,30 @@ bool ABubbleCharacter::CheckForInteractables(FHitResult HitResult)
 		HitMeshComponent->SetOverlayMaterial(InteractableOverlayMaterial);
 	}
 
-	InteractIndicationTextDelegate.Broadcast(FText::FromString("E " + InteractableActor->GetInteractableName().ToString()));
 	Server_SetFocusedInteractable(HitActor);
+	UpdateInteractionText(InteractableActor->GetInteractableName(), true);
 	return true;
 }
 
 void ABubbleCharacter::TriggerInteraction()
 {
+	UE_LOG(LogTemp, Warning, TEXT("%s: Interact"), *GetName());
+
 	FGameplayEventData Data = FGameplayEventData();
 	AbilitySystemComponent->HandleGameplayEvent(InteractionAbilityTag, &Data);
+}
+
+void ABubbleCharacter::UpdateInteractionText(FText InteractableName, bool bCanInteract)
+{
+	if (bCanInteract)
+	{
+		InteractIndicationTextDelegate.Broadcast(FText::FromString("E " + InteractableName.ToString()));
+	}
+	else
+	{
+		InteractIndicationTextDelegate.Broadcast(InteractableName);
+	}
+	
 }
 
 void ABubbleCharacter::InitCharacterDefaults()
@@ -231,6 +251,72 @@ void ABubbleCharacter::Client_UnbindMappingContext_Implementation()
 	}
 
 	InputSystem->RemoveMappingContext(DefaultMappingContext);
+}
+
+void ABubbleCharacter::NetMulticast_ShowEffectAtCharacterLocation_Implementation(UNiagaraSystem* NiagaraEffect)
+{
+	UWorld* World = GetWorld();
+	if (IsValid(World) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::NetMulticast_ShowEffectAtCharacterLocation_Implementation IsValid(World) == false"));
+		return;
+	}
+	if (IsValid(NiagaraEffect) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::NetMulticast_ShowEffectAtCharacterLocation_Implementation IsValid(AbilityNiagaraEffect) == false"));
+		return;
+	}
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, NiagaraEffect, GetActorLocation(), GetActorRotation());
+}
+
+void ABubbleCharacter::RotateTowardsActor(UWorld* World, AActor* TargetActor)
+{
+	if (IsValid(World) == false || IsValid(TargetActor) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::RotateTowardsActor IsValid(World) == false || IsValid(TargetActor) == false"));
+		return;
+	}
+
+	FVector NormalizedLocation = TargetActor->GetActorLocation() - GetActorLocation();
+	UKismetMathLibrary::Vector_Normalize(NormalizedLocation);
+
+	float DotProduct = FVector::DotProduct(NormalizedLocation, GetMesh()->GetForwardVector());
+	
+	if (FMath::Abs(DotProduct) <= 0.01f)
+	{
+		return;
+	}
+
+	FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), TargetActor->GetActorLocation());
+	FRotator InterpRotation = UKismetMathLibrary::RInterpTo(GetActorRotation(), LookAtRotation, World->DeltaTimeSeconds, 20);
+	
+	SetActorRotation(FRotator(GetActorRotation().Pitch, InterpRotation.Yaw, GetActorRotation().Roll));
+
+	FTimerHandle RotateTimer;
+	FTimerDelegate RotateTimerDelegate;
+
+	RotateTimerDelegate.BindUFunction(this, FName("RotateTowardsActor"), World, TargetActor);
+	GetWorldTimerManager().SetTimer(RotateTimer, RotateTimerDelegate, 0.01f, false);
+}
+
+void ABubbleCharacter::NetMulticast_PlayAnimationMontage_Implementation(UAnimMontage* Animation)
+{
+	if (IsValid(Animation) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::NetMulticast_PlayAnimationMontage_Implementation IsValid(Animation) == false"));
+		return;
+	}
+	PlayAnimMontage(Animation);
+}
+
+void ABubbleCharacter::NetMulticast_StopAnimationMontage_Implementation(UAnimMontage* Animation)
+{
+	if (IsValid(Animation) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::NetMulticast_StopAnimationMontage_Implementation IsValid(Animation) == false"));
+		return;
+	}
+	StopAnimMontage(Animation);
 }
 
 void ABubbleCharacter::Move(const FInputActionValue& Value)

@@ -9,6 +9,8 @@
 
 #include "ItemBase.generated.h"
 
+class UStaticMeshComponent;
+
 UCLASS()
 class BUBBLES_API AItemBase : public AActor, public IInteractable
 {
@@ -20,7 +22,10 @@ public:
 
 protected:
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	USceneComponent* Root;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UStaticMeshComponent* BaseMesh;
 
 	UPROPERTY(EditAnywhere)
