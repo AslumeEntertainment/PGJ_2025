@@ -121,10 +121,10 @@ void APaintableItem::ProgressCleaning()
 	if (AttributeSet->GetEffectiveness() > 0) NetMulticast_ShowEffect(CleannessUpEffect);
 	else if (AttributeSet->GetEffectiveness() < 0) NetMulticast_ShowEffect(CleannessDownEffect);
 
+	OnCleannessUpdated.Broadcast();
+
 	if ((FMath::Abs(Cleanness) >= MaxCleanness && FMath::Sign(AttributeSet->GetEffectiveness()) == FMath::Sign(Cleanness)) )
 	{
-		OnCleannessUpdated.Broadcast();
-
 		IsLocked = false;
 		StopInteraction(true);
 		return;

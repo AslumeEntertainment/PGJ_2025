@@ -51,6 +51,7 @@ void ATitleHUD::BeginPlay()
 	HostJoinMenu->BackClicked.AddDynamic(this, &ATitleHUD::OpenTitleMenu);
 
 	SessionSelectorMenu->BackClicked.AddDynamic(this, &ATitleHUD::OpenHostJoinMenu);
+	SessionSelectorMenu->RefreshClicked.AddDynamic(this, &ATitleHUD::ShowSessionSelectorMenu);
 
 	GameMode->OnSessionsFound.AddDynamic(this, &ATitleHUD::FillSessions);
 
@@ -118,16 +119,19 @@ void ATitleHUD::ShowSessionSelectorMenu()
 		UE_LOG(LogTemp, Error, TEXT("ATitleHUD::ShowSessionSelectorMenu IsValid(GameMode) == false"));
 		return;
 	}
-
-	ClearScreen();
-	ShowLoadingScreen();
-
 	if (IsValid(SessionSelectorMenu) == false)
 	{
 		UE_LOG(LogTemp, Error, TEXT("ATitleHUD::ShowSessionSelectorMenu IsValid(SessionSelectorMenu) == false"));
 		return;
 	}
 
+	if (SessionSelectorMenu->IsInViewport() == false)
+	{
+		ClearScreen();
+	}
+	
+	ShowLoadingScreen(FText::FromString("Looking for sessions..."));
+	SessionSelectorMenu->ClearSessions();
 	SessionSelectorMenu->AddToViewport();
 	GameMode->FindSessions();
 }

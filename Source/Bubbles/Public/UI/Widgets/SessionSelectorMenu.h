@@ -23,6 +23,9 @@ protected:
 	TSubclassOf<USessionButtonWidget> SessionButtonWidgetClass;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UButton* BTN_Refresh;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* BTN_Back;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
@@ -30,6 +33,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UWidgetSwitcher* SessionWidgetSwitcher;
+
+	UFUNCTION()
+	void OnRefreshClicked();
 
 	UFUNCTION()
 	void OnBackClicked();
@@ -44,6 +50,7 @@ public:
 
 	void ClearSessions();
 
+	FVoidDataTransferSignature RefreshClicked;
 	FVoidDataTransferSignature BackClicked;
 
 };
