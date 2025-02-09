@@ -36,10 +36,11 @@ void AInGameHUD::BeginPlay()
 	ABubbleController* BubbleCont = Cast<ABubbleController>(PlayerOwner);
 	if (IsValid(BubbleCont))
 	{
-		BubbleCont->OnGameStart.AddDynamic(this, &AInGameHUD::ShowInGameOverlay);
 		BubbleCont->OnCleanerPointUpdate.AddDynamic(InGameOverlay, &UInGameOverlay::SetCleanerScore);
 		BubbleCont->OnContaminatorPointUpdate.AddDynamic(InGameOverlay, &UInGameOverlay::SetContaminatorScore);
 		BubbleCont->OnProgressUpdate.AddDynamic(InGameOverlay, &UInGameOverlay::SetGameProgress);
+
+		BubbleCont->OnGameStart.AddDynamic(this, &AInGameHUD::ShowInGameOverlay);
 		BubbleCont->OnCooldownUpdate.AddDynamic(InGameOverlay, &UInGameOverlay::SetTimerValue);
 		BubbleCont->OnGameEnd.AddDynamic(this, &AInGameHUD::ShowGameOverWidget);
 	}
@@ -69,6 +70,10 @@ void AInGameHUD::BindPlayerDelegatesToUI()
 	{
 		HumanBubble->OnEnergyUpdated.AddDynamic(InGameOverlay, &UInGameOverlay::SetEnergyPercent);
 	}
+	if (HumanBubble->InteractIndicationTextDelegate.IsBound() == false)
+	{
+		HumanBubble->InteractIndicationTextDelegate.AddDynamic(InteractionWidget, &UInteractionWidget::SetInteractionText);
+	}
 	HumanBubble->BroadcastInitialValues();
 }
 
@@ -83,6 +88,7 @@ void AInGameHUD::ShowInGameOverlay()
 	}
 
 	InGameOverlay->AddToViewport();
+	ShowInteractionWidget();
 
 	FTimerHandle BindDelegatesTimer;
 	GetWorldTimerManager().SetTimer(BindDelegatesTimer, this, &AInGameHUD::BindPlayerDelegatesToUI, 0.01, false);
@@ -110,6 +116,8 @@ void AInGameHUD::RemoveLoadingScreen()
 
 void AInGameHUD::ShowInteractionWidget()
 {
+	UE_LOG(LogTemp, Error, TEXT("AInGameHUD::ShowInteractionWidget"));
+
 	if (IsValid(InteractionWidget) == false)
 	{
 		UE_LOG(LogTemp, Error, TEXT("AInGameHUD::ShowInteractionWidget IsValid(InteractionWidget) == false"));
@@ -120,17 +128,6 @@ void AInGameHUD::ShowInteractionWidget()
 		return;
 	}
 	
-	ABubbleCharacter* BubbleCharacter = Cast<ABubbleCharacter>(PlayerOwner->GetPawn());
-	if (IsValid(BubbleCharacter) == false)
-	{
-		UE_LOG(LogTemp, Error, TEXT("AInGameHUD::ToggleInteractionWidget IsValid(BubbleCharacter) == false"));
-		return;
-	}
-	if (BubbleCharacter->InteractIndicationTextDelegate.IsBound() == false)
-	{
-		BubbleCharacter->InteractIndicationTextDelegate.AddDynamic(InteractionWidget, &UInteractionWidget::SetInteractionText);
-	}
-
 	InteractionWidget->AddToViewport();
 }
 

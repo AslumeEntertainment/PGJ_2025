@@ -61,6 +61,8 @@ void ABubblesGameMode::PostLogin(APlayerController* NewPlayer)
 	OnGameStart.AddDynamic(PC, &ABubbleController::HideStartingWidget);
 	OnGameEnd.AddDynamic(PC, &ABubbleController::ShowEndingWidget);
 
+	UE_LOG(LogTemp, Warning, TEXT("SETTING %s's BINDINGS"), *PC->GetName());
+
 	PC->Client_SetInputMode(EInputMode::UIOnly);//Must be GameOnly by default
 	//PC->OnConnectionCleanUp.AddDynamic(this, &AGameplayGameMode::UnRegisterRequest);
 
