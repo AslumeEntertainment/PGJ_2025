@@ -104,6 +104,12 @@ public:
 	UFUNCTION()
 	void RotateTowardsActor(UWorld* World, AActor* TargetActor);
 
+	UFUNCTION(NetMulticast, Reliable)
+	void NetMulticast_PlayAnimationMontage(UAnimMontage* Animation);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void NetMulticast_StopAnimationMontage(UAnimMontage* Animation);
+
 	UFUNCTION()
 	virtual void Move(const FInputActionValue& Value);
 

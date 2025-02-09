@@ -69,6 +69,7 @@ void AInGameHUD::BindPlayerDelegatesToUI()
 	{
 		HumanBubble->OnEnergyUpdated.AddDynamic(InGameOverlay, &UInGameOverlay::SetEnergyPercent);
 	}
+	HumanBubble->BroadcastInitialValues();
 }
 
 void AInGameHUD::ShowInGameOverlay()
@@ -82,6 +83,9 @@ void AInGameHUD::ShowInGameOverlay()
 	}
 
 	InGameOverlay->AddToViewport();
+
+	FTimerHandle BindDelegatesTimer;
+	GetWorldTimerManager().SetTimer(BindDelegatesTimer, this, &AInGameHUD::BindPlayerDelegatesToUI, 0.01, false);
 }
 
 void AInGameHUD::ShowLoadingScreen(FText LoadingText)

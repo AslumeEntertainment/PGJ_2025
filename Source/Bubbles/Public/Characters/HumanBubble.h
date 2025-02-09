@@ -54,6 +54,8 @@ protected:
 
 	virtual void PossessedBy(AController* NewController) override;
 
+	void BindCallbacksToDependencies();
+
 	virtual void Move(const FInputActionValue& Value) override;
 
 	void Look(const FInputActionValue& Value);	
@@ -77,12 +79,14 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	void BroadcastInitialValues();
+
+	UFUNCTION(Client, Reliable)
+	void Client_BroadcastInitialValues();
+
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-
-	UFUNCTION(NetMulticast, Reliable)
-	void NetMulticast_PlayCharacterAnimation(UAnimMontage* Animation, bool Looping);
 
 	FFloatTransferSignature OnEffectivenessUpdated;
 	FFloatTransferSignature OnEnergyUpdated;

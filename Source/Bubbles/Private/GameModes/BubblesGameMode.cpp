@@ -21,10 +21,9 @@ void ABubblesGameMode::BeginPlay()
 
 	Spawner = Cast<APaintableItemSpawner>(FoundActors[0]);
 	
-	Spawner->OnCleanerPointsChanged;
-	Spawner->OnContaminatorPointsChanged;
-	Spawner->OnProgrssUpdated;
-
+	Spawner->OnCleanerPointsChanged.AddDynamic(this, &ABubblesGameMode::OnCleanPoints);
+	Spawner->OnContaminatorPointsChanged.AddDynamic(this, &ABubblesGameMode::OnContaminPoints);
+	Spawner->OnProgrssUpdated.AddDynamic(this, &ABubblesGameMode::OnProgress);
 }
 
 
@@ -54,6 +53,11 @@ void ABubblesGameMode::PostLogin(APlayerController* NewPlayer)
 
 	OnLobbyMessegeChanged.AddDynamic(PC, &ABubbleController::OnSessionMessegeReceived);
 	OnCooldownUpdate.AddDynamic(PC, &ABubbleController::UpdateRemainingTime);
+
+	OnCleanerPointUpdate.AddDynamic(PC, &ABubbleController::OnCleanPoints);
+	OnContaminatorPointUpdate.AddDynamic(PC, &ABubbleController::OnContaminPoints);
+	OnProgressUpdate.AddDynamic(PC, &ABubbleController::OnProgress);
+
 	OnGameStart.AddDynamic(PC, &ABubbleController::HideStartingWidget);
 	OnGameEnd.AddDynamic(PC, &ABubbleController::ShowEndingWidget);
 
@@ -109,11 +113,13 @@ void ABubblesGameMode::PrepareGame()
 		if (PlayersArray[i]->IsLocalController())
 		{
 			Char = World->SpawnActor<AHumanBubble>(CleanerClass, CleanerLocation, CleanerRotation, Params);
+			PlayersArray[i]->Team = CleanerTeam;
 			Players.Emplace(PlayersArray[i], 1);
 		}
 		else
 		{
 			Char = World->SpawnActor<AHumanBubble>(ContaminatorClass, ContaminatorLocation, ContaminatorRotation, Params);
+			PlayersArray[i]->Team = ContaminateorTeam;
 			Players.Emplace(PlayersArray[i], -1);
 		}
 		PlayersArray[i]->Possess(Char);

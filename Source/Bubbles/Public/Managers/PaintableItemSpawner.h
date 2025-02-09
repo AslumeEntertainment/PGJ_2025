@@ -40,6 +40,7 @@ protected:
 
 	UFUNCTION()
 	void OnNetWorthChanged();
+
 public:
 
 	int GetWinner() { return Cleaner + Contaminator; }

@@ -5,6 +5,8 @@
 
 #include "Components/StaticMeshComponent.h"
 
+#include "Characters/HumanBubble.h"
+
 // Sets default values
 AItemBase::AItemBase()
 {
@@ -20,6 +22,11 @@ AItemBase::AItemBase()
 
 void AItemBase::InteractRequest(AController* InteractingCharacter)
 {
+	AHumanBubble* PlayerPawn = Cast<AHumanBubble>(InteractingCharacter->GetPawn());
+	if (IsValid(PlayerPawn))
+	{
+		PlayerPawn->RotateTowardsActor(GetWorld(), this);
+	}
 	UE_LOG(LogTemp, Display, TEXT("Interacted with: %s"), *ItemName.ToString());
 }
 

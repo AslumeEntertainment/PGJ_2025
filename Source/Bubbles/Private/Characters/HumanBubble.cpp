@@ -138,33 +138,26 @@ void AHumanBubble::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	}
 }
 
-void AHumanBubble::NetMulticast_PlayCharacterAnimation_Implementation(UAnimMontage* Animation, bool Looping)
-{
-	if (IsValid(Animation) == false)
-	{
-		UE_LOG(LogTemp, Error, TEXT("AHumanBubble::PlayCharacterAnimation IsValid(Animation) == false"));
-		return;
-	}
-	GetMesh()->PlayAnimation(Animation, Looping);
-}
-
 void AHumanBubble::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
-	if (bAreAttributesBoundToUI)
+	if (bAreAttributesBoundToUI == false)
 	{
-		return;
+		BindCallbacksToDependencies();
 	}
+}
 
+void AHumanBubble::BindCallbacksToDependencies()
+{
 	if (IsValid(AbilitySystemComponent) == false)
 	{
-		UE_LOG(LogTemp, Error, TEXT("AHumanBubble::PossessedBy IsValid(AbilitySystemComponent) == false"));
+		UE_LOG(LogTemp, Error, TEXT("AHumanBubble::BindCallbacksToDependencies IsValid(AbilitySystemComponent) == false"));
 		return;
 	}
 	if (IsValid(AttributeSet) == false)
 	{
-		UE_LOG(LogTemp, Error, TEXT("AHumanBubble::PossessedBy IsValid(AttributeSet) == false"));
+		UE_LOG(LogTemp, Error, TEXT("AHumanBubble::BindCallbacksToDependencies IsValid(AttributeSet) == false"));
 		return;
 	}
 
@@ -185,6 +178,29 @@ void AHumanBubble::PossessedBy(AController* NewController)
 	);
 
 	bAreAttributesBoundToUI = true;
+}
+
+void AHumanBubble::BroadcastInitialValues()
+{
+	if (HasAuthority() == false)
+	{
+		FTimerHandle BroadcastInitialValuesTimerHandle;
+		GetWorldTimerManager().SetTimer(BroadcastInitialValuesTimerHandle, this, &AHumanBubble::Client_BroadcastInitialValues, 0.5f, false);
+	}
+
+	if (IsValid(AttributeSet) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AHumanBubble::BroadcastInitialValues IsValid(AttributeSet) == false"));
+		return;
+	}
+
+	Client_OnEffectivenessUpdated(AttributeSet->GetEffectiveness(), AttributeSet->GetMaxEffectiveness());
+	Client_OnEnergyUpdated(AttributeSet->GetEnergy(), AttributeSet->GetMaxEnergy());
+}
+
+void AHumanBubble::Client_BroadcastInitialValues_Implementation()
+{
+	BroadcastInitialValues();
 }
 
 void AHumanBubble::Move(const FInputActionValue& Value)

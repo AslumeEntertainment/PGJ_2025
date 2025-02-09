@@ -97,6 +97,5 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetCleanness(int NewValue, bool bCanBypass = false);
 
-
 	FVoidDataTransferSignature OnCleannessUpdated;
 };

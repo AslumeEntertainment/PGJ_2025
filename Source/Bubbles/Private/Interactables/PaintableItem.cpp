@@ -123,6 +123,8 @@ void APaintableItem::ProgressCleaning()
 
 	if ((FMath::Abs(Cleanness) >= MaxCleanness && FMath::Sign(AttributeSet->GetEffectiveness()) == FMath::Sign(Cleanness)) )
 	{
+		OnCleannessUpdated.Broadcast();
+
 		IsLocked = false;
 		StopInteraction(true);
 		return;
@@ -137,7 +139,6 @@ void APaintableItem::ProgressCleaning()
 
 void APaintableItem::StopInteraction(bool GiveEnregy)
 {
-
 	if (GiveEnregy)
 	{
 		UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(InteractingPlayer->GetPawn());
@@ -145,7 +146,12 @@ void APaintableItem::StopInteraction(bool GiveEnregy)
 
 		ASC->SetNumericAttributeBase(UBubbleAttributeSet::GetEnergyAttribute(), FMath::Clamp(AttributeSet->GetEnergy() + GetNetWorth(), 0, AttributeSet->GetMaxEnergy()));
 	}
-	
+
+	AHumanBubble* PlayerPawn = Cast<AHumanBubble>(InteractingPlayer->GetPawn());
+	if (IsValid(PlayerPawn))
+	{
+		PlayerPawn->NetMulticast_StopAnimationMontage(PlayerPawn->CleanAnimation);
+	}
 
 	InteractingPlayer->Client_SetInputMode(EInputMode::GameOnly);
 	InteractingPlayer = nullptr;
@@ -157,6 +163,7 @@ void APaintableItem::StopInteraction(bool GiveEnregy)
 
 void APaintableItem::InteractRequest(AController* InteractingCharacter)
 {
+	Super::InteractRequest(InteractingCharacter);
 	if (HasAuthority() == false)
 	{
 		return;
@@ -168,8 +175,7 @@ void APaintableItem::InteractRequest(AController* InteractingCharacter)
 	AHumanBubble* PlayerPawn = Cast<AHumanBubble>(InteractingCharacter->GetPawn());
 	if (IsValid(PlayerPawn))
 	{
-		PlayerPawn->RotateTowardsActor(GetWorld(), this);
-		PlayerPawn->NetMulticast_PlayCharacterAnimation(PlayerPawn->CleanAnimation, true);
+		PlayerPawn->NetMulticast_PlayAnimationMontage(PlayerPawn->CleanAnimation);
 	}
 
 	//SetOwner(InteractingPlayer);

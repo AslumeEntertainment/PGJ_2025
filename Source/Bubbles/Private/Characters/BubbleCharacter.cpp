@@ -271,19 +271,24 @@ void ABubbleCharacter::NetMulticast_ShowEffectAtCharacterLocation_Implementation
 
 void ABubbleCharacter::RotateTowardsActor(UWorld* World, AActor* TargetActor)
 {
-	if (IsValid(World) == false)
+	if (IsValid(World) == false || IsValid(TargetActor) == false)
 	{
-		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::RotateTowardsActor IsValid(World) == false"));
+		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::RotateTowardsActor IsValid(World) == false || IsValid(TargetActor) == false"));
+		return;
+	}
+
+	FVector NormalizedLocation = TargetActor->GetActorLocation() - GetActorLocation();
+	UKismetMathLibrary::Vector_Normalize(NormalizedLocation);
+
+	float DotProduct = FVector::DotProduct(NormalizedLocation, GetMesh()->GetForwardVector());
+	
+	if (FMath::Abs(DotProduct) <= 0.01f)
+	{
 		return;
 	}
 
 	FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), TargetActor->GetActorLocation());
 	FRotator InterpRotation = UKismetMathLibrary::RInterpTo(GetActorRotation(), LookAtRotation, World->DeltaTimeSeconds, 20);
-	
-	if (FMath::Abs(InterpRotation.Yaw) < 0.01f)
-	{
-		return;
-	}
 	
 	SetActorRotation(FRotator(GetActorRotation().Pitch, InterpRotation.Yaw, GetActorRotation().Roll));
 
@@ -292,6 +297,26 @@ void ABubbleCharacter::RotateTowardsActor(UWorld* World, AActor* TargetActor)
 
 	RotateTimerDelegate.BindUFunction(this, FName("RotateTowardsActor"), World, TargetActor);
 	GetWorldTimerManager().SetTimer(RotateTimer, RotateTimerDelegate, 0.01f, false);
+}
+
+void ABubbleCharacter::NetMulticast_PlayAnimationMontage_Implementation(UAnimMontage* Animation)
+{
+	if (IsValid(Animation) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::NetMulticast_PlayAnimationMontage_Implementation IsValid(Animation) == false"));
+		return;
+	}
+	PlayAnimMontage(Animation);
+}
+
+void ABubbleCharacter::NetMulticast_StopAnimationMontage_Implementation(UAnimMontage* Animation)
+{
+	if (IsValid(Animation) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::NetMulticast_StopAnimationMontage_Implementation IsValid(Animation) == false"));
+		return;
+	}
+	StopAnimMontage(Animation);
 }
 
 void ABubbleCharacter::Move(const FInputActionValue& Value)

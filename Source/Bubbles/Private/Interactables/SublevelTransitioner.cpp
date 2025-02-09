@@ -14,6 +14,7 @@
 
 void ASublevelTransitioner::InteractRequest(AController* InteractingCharacter)
 {
+	Super::InteractRequest(InteractingCharacter);
 	//play anim
 
 	if (HasAuthority() == false)

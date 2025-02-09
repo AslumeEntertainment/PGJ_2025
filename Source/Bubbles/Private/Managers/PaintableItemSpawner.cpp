@@ -45,11 +45,10 @@ void APaintableItemSpawner::BeginPlay()
 		Item->OnCleannessUpdated.AddDynamic(this, &APaintableItemSpawner::OnNetWorthChanged);
 		TotalNetWorth += Item->GetNetWorth();
 	}
-
 }
 
 void APaintableItemSpawner::OnNetWorthChanged()
-{
+{ 
 	Cleaner = 0;
 	Contaminator = 0;
 
@@ -59,7 +58,9 @@ void APaintableItemSpawner::OnNetWorthChanged()
 		Points < 0 ? Contaminator += Points : Cleaner += Points;
 	}
 
+	UE_LOG(LogTemp, Warning, TEXT("Score has been updated: Cleaner - %d, Contaminator - %d"), Cleaner, Contaminator);
+
 	OnCleanerPointsChanged.Broadcast(Cleaner);
 	OnContaminatorPointsChanged.Broadcast(Contaminator);
-	OnProgrssUpdated.Broadcast((Cleaner + Contaminator + TotalNetWorth) / (TotalNetWorth * 2));
+	OnProgrssUpdated.Broadcast(float(Cleaner + Contaminator + TotalNetWorth) / float(TotalNetWorth * 2));
 }

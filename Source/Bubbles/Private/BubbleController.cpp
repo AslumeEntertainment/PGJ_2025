@@ -36,11 +36,6 @@ void ABubbleController::OnPossess(APawn* InPawn)
 		return;
 	}
 	InGameHUD->ShowInteractionWidget();
-	
-	if (Cast<AHumanBubble>(InPawn))
-	{
-		InGameHUD->BindPlayerDelegatesToUI();
-	}
 }
 
 void ABubbleController::OnSessionMessegeReceived(FText Messege)//_Implementation(FText Messege)
@@ -65,6 +60,7 @@ void ABubbleController::HideStartingWidget_Implementation()
 void ABubbleController::ShowEndingWidget_Implementation(int value)
 {
 	OnGameEnd.Broadcast(FText::FromString("You " + FString(FMath::Sign(Team) == FMath::Sign(value) ? "Win" : "Lose")));
+	UE_LOG(LogTemp, Warning, TEXT("%s: Team - %d, Score difference - %d"), *GetName(), Team, value);
 	UE_LOG(LogTemp, Warning, TEXT("%s: Client Showing Widget"), *GetName());
 }
 
