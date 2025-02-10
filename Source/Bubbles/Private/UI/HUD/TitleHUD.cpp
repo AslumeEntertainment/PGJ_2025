@@ -162,6 +162,7 @@ void ATitleHUD::FillSessions(TArray<FText> SessionNames)
 		if (IsValid(SessionButton))
 		{
 			SessionButton->SessionClicked.AddDynamic(GameMode, &ATitleGameMode::JoinSession);
+			SessionButton->SessionNameDelegate.AddDynamic(this, &ATitleHUD::ShowLoadingScreen);
 		}
 	}
 }

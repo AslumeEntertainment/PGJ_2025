@@ -16,65 +16,65 @@
 
 void AInGameHUD::BeginPlay()
 {
-	UWorld* World = GetWorld();
-	if (IsValid(World) == false)
-	{
-		return;
-	}
-
 	if (PlayerOwner)
 	{
 		PlayerOwner->SetInputMode(FInputModeGameOnly());
 		PlayerOwner->bShowMouseCursor = false;
 	}
-
-	InteractionWidget = CreateWidget<UInteractionWidget>(UGameplayStatics::GetGameInstance(World), InteractionWidgetClass);
-	InGameOverlay = CreateWidget<UInGameOverlay>(UGameplayStatics::GetGameInstance(World), InGameOverlayClass);
-	LoadingScreen = CreateWidget<ULoadingScreen>(UGameplayStatics::GetGameInstance(World), LoadingScreenClass);
-	GameOverWidget = CreateWidget<UGameOverWidget>(UGameplayStatics::GetGameInstance(World), GameOverWidgetClass);
-	
-	ABubbleController* BubbleCont = Cast<ABubbleController>(PlayerOwner);
-	if (IsValid(BubbleCont))
-	{
-		BubbleCont->OnCleanerPointUpdate.AddDynamic(InGameOverlay, &UInGameOverlay::SetCleanerScore);
-		BubbleCont->OnContaminatorPointUpdate.AddDynamic(InGameOverlay, &UInGameOverlay::SetContaminatorScore);
-		BubbleCont->OnProgressUpdate.AddDynamic(InGameOverlay, &UInGameOverlay::SetGameProgress);
-
-		BubbleCont->OnGameStart.AddDynamic(this, &AInGameHUD::ShowInGameOverlay);
-		BubbleCont->OnCooldownUpdate.AddDynamic(InGameOverlay, &UInGameOverlay::SetTimerValue);
-		BubbleCont->OnGameEnd.AddDynamic(this, &AInGameHUD::ShowGameOverWidget);
-	}
-
-	ShowLoadingScreen(FText::FromString("Waiting for all players"));
 }
 
-void AInGameHUD::BindPlayerDelegatesToUI()
+void AInGameHUD::BindControllerDelegatesToUI(ABubbleController* Controller)
 {
-	if (IsValid(InGameOverlay) == false)
+	if (IsValid(Controller) == false)
 	{
-		UE_LOG(LogTemp, Error, TEXT("AInGameHUD::BindPlayerDelegatesToUI IsValid(InGameOverlay) == false"));
+		UE_LOG(LogTemp, Error, TEXT("AInGameHUD::BindControllerDelegatesToUI IsValid(Controller) == false"));
 		return;
 	}
 
-	AHumanBubble* HumanBubble = Cast<AHumanBubble>(PlayerOwner->GetPawn());
-	if (IsValid(HumanBubble) == false)
+	InteractionWidget = CreateWidget<UInteractionWidget>(Controller, InteractionWidgetClass);
+	InGameOverlay = CreateWidget<UInGameOverlay>(Controller, InGameOverlayClass);
+	LoadingScreen = CreateWidget<ULoadingScreen>(Controller, LoadingScreenClass);
+	GameOverWidget = CreateWidget<UGameOverWidget>(Controller, GameOverWidgetClass);
+
+	ShowLoadingScreen(FText::FromString("Waiting for all players"));
+
+	if (IsValid(InGameOverlay) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AInGameHUD::BindControllerDelegatesToUI IsValid(InGameOverlay) == false"));
+		return;
+	}
+
+	Controller->OnCleanerPointUpdate.AddDynamic(InGameOverlay, &UInGameOverlay::SetCleanerScore);
+	Controller->OnContaminatorPointUpdate.AddDynamic(InGameOverlay, &UInGameOverlay::SetContaminatorScore);
+	Controller->OnProgressUpdate.AddDynamic(InGameOverlay, &UInGameOverlay::SetGameProgress);
+
+	Controller->OnGameStarted.AddDynamic(this, &AInGameHUD::ShowInGameOverlay);
+	Controller->OnCooldownUpdate.AddDynamic(InGameOverlay, &UInGameOverlay::SetTimerValue);
+	Controller->OnGameEnd.AddDynamic(this, &AInGameHUD::ShowGameOverWidget);
+
+	GameOverWidget->QuitClicked.AddDynamic(Controller, &ABubbleController::LeaveGame);
+}
+
+void AInGameHUD::BindPawnDelegatesToUI(AHumanBubble* Pawn)
+{
+	if (IsValid(Pawn) == false)
 	{
 		UE_LOG(LogTemp, Error, TEXT("AInGameHUD::BindPlayerDelegatesToUI IsValid(HumanBubble) == false"));
 		return;
 	}
-	if (HumanBubble->OnEffectivenessUpdated.IsBound() == false)
+	if (Pawn->OnEffectivenessUpdated.IsBound() == false)
 	{
-		HumanBubble->OnEffectivenessUpdated.AddDynamic(InGameOverlay, &UInGameOverlay::SetEffectivenessPercent);
+		Pawn->OnEffectivenessUpdated.AddDynamic(InGameOverlay, &UInGameOverlay::SetEffectivenessPercent);
 	}
-	if (HumanBubble->OnEnergyUpdated.IsBound() == false)
+	if (Pawn->OnEnergyUpdated.IsBound() == false)
 	{
-		HumanBubble->OnEnergyUpdated.AddDynamic(InGameOverlay, &UInGameOverlay::SetEnergyPercent);
+		Pawn->OnEnergyUpdated.AddDynamic(InGameOverlay, &UInGameOverlay::SetEnergyPercent);
 	}
-	if (HumanBubble->InteractIndicationTextDelegate.IsBound() == false)
+	if (Pawn->InteractIndicationTextDelegate.IsBound() == false)
 	{
-		HumanBubble->InteractIndicationTextDelegate.AddDynamic(InteractionWidget, &UInteractionWidget::SetInteractionText);
+		Pawn->InteractIndicationTextDelegate.AddDynamic(InteractionWidget, &UInteractionWidget::SetInteractionText);
 	}
-	HumanBubble->BroadcastInitialValues();
+	Pawn->BroadcastInitialValues();
 }
 
 void AInGameHUD::ShowInGameOverlay()
@@ -89,9 +89,6 @@ void AInGameHUD::ShowInGameOverlay()
 
 	InGameOverlay->AddToViewport();
 	ShowInteractionWidget();
-
-	FTimerHandle BindDelegatesTimer;
-	GetWorldTimerManager().SetTimer(BindDelegatesTimer, this, &AInGameHUD::BindPlayerDelegatesToUI, 0.01, false);
 }
 
 void AInGameHUD::ShowLoadingScreen(FText LoadingText)

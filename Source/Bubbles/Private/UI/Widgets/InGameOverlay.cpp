@@ -49,5 +49,6 @@ void UInGameOverlay::SetEffectivenessPercent(float EffectivenessPercent)
 void UInGameOverlay::SetEnergyPercent(float EnergyPercent)
 {
 	EnergyProgressBar->SetPercent(EnergyPercent);
+	TXT_UltimateIndicator->SetRenderOpacity(EnergyPercent == 1.f ? 1 : 0);
 }
 

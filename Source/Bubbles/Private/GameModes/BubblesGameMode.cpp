@@ -64,6 +64,11 @@ void ABubblesGameMode::PostLogin(APlayerController* NewPlayer)
 	UE_LOG(LogTemp, Warning, TEXT("SETTING %s's BINDINGS"), *PC->GetName());
 
 	PC->Client_SetInputMode(EInputMode::UIOnly);//Must be GameOnly by default
+	PC->Client_SetupUIBindings();
+
+	/*FTimerHandle BindDelegatesTimer;
+	GetWorldTimerManager().SetTimer(BindDelegatesTimer, PC, &ABubbleController::Client_SetupUIBindings, 0.01, false);*/
+	
 	//PC->OnConnectionCleanUp.AddDynamic(this, &AGameplayGameMode::UnRegisterRequest);
 
 	CheckLobbyReadiness();

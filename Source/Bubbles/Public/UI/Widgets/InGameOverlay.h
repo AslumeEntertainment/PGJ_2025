@@ -34,6 +34,9 @@ protected:
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UProgressBar* EnergyProgressBar;
 
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UTextBlock* TXT_UltimateIndicator;
+
 public:
 
 	UFUNCTION()

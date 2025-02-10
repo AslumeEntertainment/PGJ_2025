@@ -4,10 +4,11 @@
 #include "BubbleController.h"
 
 #include "Headers/GeneralDelegates.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
 #include "Characters/HumanBubble.h"
-#include "UI/HUD/InGameHUD.h"	
+#include "UI/HUD/InGameHUD.h"
 
 void ABubbleController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -25,10 +26,35 @@ void ABubbleController::Client_SetInputMode_Implementation(EInputMode  InputMode
 		case EInputMode::UIOnly: SetInputMode(FInputModeUIOnly()); IsInputLocked = true; break;
 	}
 }
+
+void ABubbleController::Client_SetupUIBindings_Implementation()
+{
+	AInGameHUD* InGameHUD = Cast<AInGameHUD>(GetHUD());
+	if (IsValid(InGameHUD) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleController::Client_SetupUIBindings_Implementation IsValid(InGameHUD) == false"))
+		return;
+	}
+	InGameHUD->BindControllerDelegatesToUI(this);
+}
+
 void ABubbleController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 	Client_SetInputMode(EInputMode::GameOnly);
+}
+
+void ABubbleController::AcknowledgePossession(APawn* P)
+{
+	Super::AcknowledgePossession(P);
+
+	AInGameHUD* InGameHUD = GetHUD<AInGameHUD>();
+	if (IsValid(InGameHUD) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleController::AcknowledgePossession IsValid(InGameHUD) == false"))
+		return;
+	}
+	InGameHUD->BindPawnDelegatesToUI(Cast<AHumanBubble>(P));
 }
 
 void ABubbleController::OnSessionMessegeReceived(FText Messege)//_Implementation(FText Messege)
@@ -45,11 +71,11 @@ void ABubbleController::UpdateRemainingTime_Implementation(int value)
 
 void ABubbleController::HideStartingWidget_Implementation()
 {
-	if (OnGameStart.IsBound())
+	if (OnGameStarted.IsBound())
 	{
-		OnGameStart.Broadcast();
+		OnGameStarted.Broadcast();
 	}
-	else UE_LOG(LogTemp, Error, TEXT("%s: ABubbleController::HideStartingWidget OnGameStart is not bound!!!"), *GetName());
+	else UE_LOG(LogTemp, Error, TEXT("%s: ABubbleController::HideStartingWidget OnGameStarted is not bound!!!"), *GetName());
 	
 	UE_LOG(LogTemp, Warning, TEXT("%s: ABubbleController::HideStartingWidget"), *GetName());
 }
@@ -81,4 +107,16 @@ void ABubbleController::OnContaminPoints(int points)
 void ABubbleController::OnProgress(float progress)
 {
 	OnProgressUpdate.Broadcast(progress);
+}
+
+void ABubbleController::LeaveGame()
+{
+	UWorld* World = GetWorld();
+	if (IsValid(World) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleController::LeaveGame IsValid(World) == false"));
+		return;
+	}
+
+	UGameplayStatics::OpenLevel(World, "TitleLevel");
 }

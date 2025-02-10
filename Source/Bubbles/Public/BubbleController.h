@@ -31,7 +31,12 @@ public:
 	UFUNCTION(Client, Reliable)
 	void Client_SetInputMode(EInputMode InputMode);
 
+	UFUNCTION(Client, Reliable)
+	void Client_SetupUIBindings();
+
 	void OnPossess(APawn* InPawn) override;
+
+	void AcknowledgePossession(APawn* P) override;
 
 	UFUNCTION(/*Client, Reliable*/)
 	void OnSessionMessegeReceived(FText Messege);
@@ -54,6 +59,9 @@ public:
 	UFUNCTION()
 	void OnProgress(float progress);
 
+	UFUNCTION()
+	void LeaveGame();
+
 	UPROPERTY(BlueprintAssignable)
 	FTextTransferSignature OnLobbyMessegeChanged;
 
@@ -61,7 +69,7 @@ public:
 	FIntegerTransferSignature OnCooldownUpdate;
 
 	UPROPERTY(BlueprintAssignable)
-	FVoidDataTransferSignature OnGameStart;
+	FVoidDataTransferSignature OnGameStarted;
 
 	UPROPERTY(BlueprintAssignable)
 	FTextTransferSignature OnGameEnd;

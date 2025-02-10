@@ -47,11 +47,13 @@ void APaintableItem::SetCleanness(int NewValue, bool bCanBypass)
 	
 	UE_LOG(LogTemp, Warning, TEXT("Cleaning - Cleanness: %d"), Cleanness);
 
+	OnCleannessUpdated.Broadcast();
 	UpdateTexture();
 }
 
 void APaintableItem::OnRep_Cleanness()
 {
+	OnCleannessUpdated.Broadcast();
 	UpdateTexture();
 }
 
@@ -120,8 +122,6 @@ void APaintableItem::ProgressCleaning()
 
 	if (AttributeSet->GetEffectiveness() > 0) NetMulticast_ShowEffect(CleannessUpEffect);
 	else if (AttributeSet->GetEffectiveness() < 0) NetMulticast_ShowEffect(CleannessDownEffect);
-
-	OnCleannessUpdated.Broadcast();
 
 	if ((FMath::Abs(Cleanness) >= MaxCleanness && FMath::Sign(AttributeSet->GetEffectiveness()) == FMath::Sign(Cleanness)) )
 	{
