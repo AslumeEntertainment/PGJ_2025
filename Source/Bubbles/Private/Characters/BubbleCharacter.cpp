@@ -65,28 +65,49 @@ bool ABubbleCharacter::CheckForInteractables(FHitResult HitResult)
 		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::CheckForInteractables IsValid(PC) == false"));
 		return false;
 	}
+
+	AActor* HitActor = HitResult.GetActor();
+	UPrimitiveComponent* HitComponent = HitResult.GetComponent();
+	IInteractable* InteractableActor = Cast<IInteractable>(HitActor);
+
 	if (PC->IsInputLocked)
 	{
 		if (FocusedInteractableObject != nullptr)
 		{
+			if (FocusedInteractableObject == HitActor && InteractableActor != nullptr)
+			{
+				UpdateInteractionText(InteractableActor->GetInteractableName(), InteractableActor->bCanInteract(GetController()));
+			}
+
 			UActorComponent* InteractableMeshComponent = Cast<AActor>(FocusedInteractableObject)->GetComponentByClass(UMeshComponent::StaticClass());
 			if (Cast<UMeshComponent>(InteractableMeshComponent))
 			{
 				Cast<UMeshComponent>(InteractableMeshComponent)->SetOverlayMaterial(nullptr);
 			}
 		}
-		Server_SetFocusedInteractable(nullptr);
+		//Server_SetFocusedInteractable(nullptr);
 		return false;
 	}
 
-	AActor* HitActor = HitResult.GetActor();
-	UPrimitiveComponent* HitComponent = HitResult.GetComponent();
-	IInteractable* InteractableActor = Cast<IInteractable>(HitActor);
-
 	if (FocusedInteractableObject == HitActor)
 	{
+		if (InteractableActor == nullptr)
+		{
+			return false;
+		}
+
+		UpdateInteractionText(InteractableActor->GetInteractableName(), InteractableActor->bCanInteract(GetController()));
+
+		UActorComponent* InteractableMeshComponent = Cast<AActor>(FocusedInteractableObject)->GetComponentByClass(UMeshComponent::StaticClass());
+		if (Cast<UMeshComponent>(InteractableMeshComponent))
+		{
+			Cast<UMeshComponent>(InteractableMeshComponent)->SetOverlayMaterial(
+				InteractableActor->bCanInteract(GetController()) ? InteractableOverlayMaterial : nullptr);
+		}
+
 		return true;
 	}
+
 	if (InteractableActor == nullptr)
 	{
 		if (FocusedInteractableObject == nullptr)

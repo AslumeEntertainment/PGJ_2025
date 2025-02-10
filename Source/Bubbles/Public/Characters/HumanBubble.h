@@ -15,6 +15,8 @@ class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
 
+class AFlatBubbleCharacter;
+
 UCLASS(config=Game)
 class AHumanBubble : public ABubbleCharacter
 {
@@ -68,8 +70,8 @@ protected:
 
 public:
 
-	UPROPERTY(EditDefaultsOnly, Category = "CustomValues|Animation")
-	UMaterialInterface* FlatBubbleMaterial;
+	UPROPERTY(EditAnywhere, Category = "CustomValues")
+	TSubclassOf<AFlatBubbleCharacter> FlatBubbleClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "CustomValues|Animation")
 	UAnimMontage* CleanAnimation;

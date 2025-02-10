@@ -50,10 +50,10 @@ public:
 	UFUNCTION(Client, Reliable)
 	void ShowEndingWidget(int value);
 
-	UFUNCTION()
+	UFUNCTION(Client, Reliable)
 	void OnCleanPoints(int points);
 
-	UFUNCTION()
+	UFUNCTION(Client, Reliable)
 	void OnContaminPoints(int points);
 
 	UFUNCTION()

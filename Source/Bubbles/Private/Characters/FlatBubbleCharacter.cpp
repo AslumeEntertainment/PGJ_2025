@@ -74,8 +74,3 @@ void AFlatBubbleCharacter::OnInteractionCapsuleBeginOverlap(UPrimitiveComponent*
 		TriggerInteraction();
 	}
 }
-
-void AFlatBubbleCharacter::NetMulticast_SetFlatBubbleMaterial_Implementation(UMaterialInterface* FlatBubbleMaterial)
-{
-	GetMesh()->SetMaterial(0, FlatBubbleMaterial);
-}

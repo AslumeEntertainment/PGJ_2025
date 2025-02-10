@@ -8,6 +8,7 @@
 #include "Net/UnrealNetwork.h"
 
 #include "Characters/HumanBubble.h"
+#include "Characters/FlatBubbleCharacter.h"
 #include "UI/HUD/InGameHUD.h"
 
 void ABubbleController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -54,7 +55,16 @@ void ABubbleController::AcknowledgePossession(APawn* P)
 		UE_LOG(LogTemp, Error, TEXT("ABubbleController::AcknowledgePossession IsValid(InGameHUD) == false"))
 		return;
 	}
-	InGameHUD->BindPawnDelegatesToUI(Cast<AHumanBubble>(P));
+
+	if (IsValid(Cast<AHumanBubble>(P)))
+	{
+		InGameHUD->BindPawnDelegatesToUI(Cast<AHumanBubble>(P));
+		InGameHUD->ShowInteractionWidget();
+	}
+	else if (IsValid(Cast<AFlatBubbleCharacter>(P)))
+	{
+		InGameHUD->HideInteractionWidget();
+	}
 }
 
 void ABubbleController::OnSessionMessegeReceived(FText Messege)//_Implementation(FText Messege)
@@ -94,12 +104,12 @@ void ABubbleController::ShowEndingWidget_Implementation(int value)
 	UE_LOG(LogTemp, Warning, TEXT("%s: ABubbleController::ShowEndingWidget"), *GetName());
 }
 
-void ABubbleController::OnCleanPoints(int points)
+void ABubbleController::OnCleanPoints_Implementation(int points)
 {
 	OnCleanerPointUpdate.Broadcast(points);
 }
 
-void ABubbleController::OnContaminPoints(int points)
+void ABubbleController::OnContaminPoints_Implementation(int points)
 {
 	OnContaminatorPointUpdate.Broadcast(points);
 }

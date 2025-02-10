@@ -99,13 +99,6 @@ void APaintableItem::ProgressCleaning()
 {
 	Iterations-= CleaningInterval;
 
-	AHumanBubble* PlayerPawn = Cast<AHumanBubble>(InteractingPlayer->GetPawn());
-	if (IsValid(PlayerPawn) == false)
-	{
-		UE_LOG(LogTemp, Error, TEXT("APaintableItem::ProgressCleaning IsValid(PlayerPawn) == false"));
-		return;
-	}
-
 	UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(InteractingPlayer->GetPawn());
 
 	if (IsValid(ASC) == false)
@@ -117,8 +110,6 @@ void APaintableItem::ProgressCleaning()
 	const UBubbleAttributeSet* AttributeSet = Cast<UBubbleAttributeSet>(ASC->GetAttributeSet(UBubbleAttributeSet::StaticClass()));
 
 	SetCleanness(Cleanness + AttributeSet->GetEffectiveness());
-	
-	PlayerPawn->UpdateInteractionText(GetInteractableName(), true);
 
 	if (AttributeSet->GetEffectiveness() > 0) NetMulticast_ShowEffect(CleannessUpEffect);
 	else if (AttributeSet->GetEffectiveness() < 0) NetMulticast_ShowEffect(CleannessDownEffect);

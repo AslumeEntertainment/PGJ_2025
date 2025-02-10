@@ -19,17 +19,17 @@ void ASublevelExit::InteractRequest(AController* InteractingCharacter)
 		return;
 	}
 
-	AFlatBubbleCharacter* FlatBubble = Cast<AFlatBubbleCharacter>(InteractingCharacter->GetPawn());
-	if (IsValid(FlatBubble) == false)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ASublevelExit::InteractRequest IsValid(FlatBubble) == false"));
-		return;
-	}
-
 	APlayerController* PlayerCont = Cast<APlayerController>(InteractingCharacter);
 	if (IsValid(PlayerCont) == false)
 	{
 		UE_LOG(LogTemp, Error, TEXT("ASublevelExit::InteractRequest IsValid(PlayerCont) == false"));
+		return;
+	}
+
+	AFlatBubbleCharacter* FlatBubble = Cast<AFlatBubbleCharacter>(InteractingCharacter->GetPawn());
+	if (IsValid(FlatBubble) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ASublevelExit::InteractRequest IsValid(FlatBubble) == false"));
 		return;
 	}
 
@@ -49,12 +49,6 @@ void ASublevelExit::InteractRequest(AController* InteractingCharacter)
 	else
 	{
 		//pop
-	}
-
-	AInGameHUD* HUD = Cast<AInGameHUD>(PlayerCont->GetHUD());
-	if (IsValid(HUD))
-	{
-		HUD->ShowInteractionWidget();
 	}
 
 	FlatBubble->Client_UnbindMappingContext();

@@ -49,7 +49,4 @@ public:
 	UPROPERTY()
 	AHumanBubble* HumanBubbleOwner = nullptr;
 
-	UFUNCTION(NetMulticast, Reliable)
-	void NetMulticast_SetFlatBubbleMaterial(UMaterialInterface* FlatBubbleMaterial);
-
 };

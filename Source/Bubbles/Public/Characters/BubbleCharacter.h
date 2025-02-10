@@ -84,6 +84,7 @@ protected:
 
 public:
 
+	UFUNCTION()
 	void UpdateInteractionText(FText InteractableName, bool bCanInteract);
 
 	void InitCharacterDefaults();

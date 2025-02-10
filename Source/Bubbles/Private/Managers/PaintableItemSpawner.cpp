@@ -17,34 +17,7 @@ APaintableItemSpawner::APaintableItemSpawner()
 void APaintableItemSpawner::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	if (HasAuthority() == false)return;
 
-	UWorld* World = GetWorld();
-	if (IsValid(World) == false)
-	{
-		UE_LOG(LogTemp, Error, TEXT("APaintableItemSpawner::BeginPlay IsValid(World) == false"));
-		return;
-	}
-
-	FActorSpawnParameters Params;
-	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-
-	int NumSpawnPoints = SpawnPoints.Num();
-
-	for (int i = 0; i < NumSpawnPoints; i++)
-	{
-		int RandIndex = i<MinimumSpawnedItems ? 0 : FMath::RandRange(0, SpawnableItems.Num() - 1);
-		int RandIndexLocation = FMath::RandRange(0, SpawnPoints.Num() - 1);
-		FVector RandLocation = SpawnPoints[RandIndexLocation];
-		SpawnPoints.RemoveAt(RandIndexLocation);
-		if (SpawnableItems[RandIndex] == nullptr) continue;
-
-		APaintableItem* Item = World->SpawnActor<APaintableItem>(SpawnableItems[RandIndex], RandLocation, FRotator(0, 0, 0), Params);
-		SpawnedItems.Add(Item);
-		Item->OnCleannessUpdated.AddDynamic(this, &APaintableItemSpawner::OnNetWorthChanged);
-		TotalNetWorth += Item->GetNetWorth();
-	}
 }
 
 void APaintableItemSpawner::OnNetWorthChanged()
@@ -58,9 +31,52 @@ void APaintableItemSpawner::OnNetWorthChanged()
 		Points < 0 ? Contaminator += Points : Cleaner += Points;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Score has been updated: Cleaner - %d, Contaminator - %d"), Cleaner, Contaminator);
-
 	OnCleanerPointsChanged.Broadcast(Cleaner);
 	OnContaminatorPointsChanged.Broadcast(Contaminator);
 	OnProgrssUpdated.Broadcast(float(Cleaner + Contaminator + TotalNetWorth) / float(TotalNetWorth * 2));
+}
+
+void APaintableItemSpawner::SpawnPaintableItems()
+{
+	if (HasAuthority() == false) return;
+
+	UWorld* World = GetWorld();
+	if (IsValid(World) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("APaintableItemSpawner::SpawnPaintableItems IsValid(World) == false"));
+		return;
+	}
+
+	TotalNetWorth = 0;
+
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	int NumSpawnPoints = SpawnPoints.Num();
+
+	for (int i = 0; i < NumSpawnPoints; i++)
+	{
+		int RandIndex = i < MinimumSpawnedItems ? 0 : FMath::RandRange(0, SpawnableItems.Num() - 1);
+		int RandIndexLocation = FMath::RandRange(0, SpawnPoints.Num() - 1);
+		FVector RandLocation = SpawnPoints[RandIndexLocation];
+		SpawnPoints.RemoveAt(RandIndexLocation);
+		if (SpawnableItems[RandIndex] == nullptr) continue;
+
+		APaintableItem* Item = World->SpawnActor<APaintableItem>(SpawnableItems[RandIndex], RandLocation, FRotator(0, 0, 0), Params);
+		SpawnedItems.Add(Item);
+		Item->OnCleannessUpdated.AddDynamic(this, &APaintableItemSpawner::OnNetWorthChanged);
+		TotalNetWorth += Item->GetNetWorth();
+	}
+}
+
+void APaintableItemSpawner::DestroyPaintableItems()
+{
+	for (APaintableItem* PaintableItem : SpawnedItems)
+	{
+		if (IsValid(PaintableItem) == false)
+		{
+			continue;
+		}
+		PaintableItem->Destroy();
+	}
 }

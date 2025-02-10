@@ -103,6 +103,8 @@ void ABubblesGameMode::PrepareGame()
 		return;
 	}
 
+	Spawner->SpawnPaintableItems();
+
 	FActorSpawnParameters Params;
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 

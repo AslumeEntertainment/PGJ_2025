@@ -26,6 +26,12 @@ protected:
 	UTextBlock* TXT_ContaminatorScore;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UTextBlock* TXT_BubbleEffectiveness;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UTextBlock* TXT_UltimateIndicator;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UProgressBar* GameProgressBar;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
@@ -35,7 +41,7 @@ protected:
 	UProgressBar* EnergyProgressBar;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	UTextBlock* TXT_UltimateIndicator;
+	UProgressBar* BubbleEffectivenessProgressBar;
 
 public:
 
@@ -56,4 +62,10 @@ public:
 
 	UFUNCTION()
 	void SetEnergyPercent(float EnergyPercent);
+
+	UFUNCTION()
+	void SetBubbleEffectivenessPercent(float BubbleEffectivenessPercent);
+
+	UFUNCTION()
+	void SetBubbleEffectivenessVisibility(bool bIsVisible);
 };
