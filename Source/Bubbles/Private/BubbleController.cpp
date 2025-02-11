@@ -15,6 +15,11 @@ void ABubbleController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME_CONDITION_NOTIFY(ABubbleController, CleanerPoints, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(ABubbleController, ContaminatorPoints, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(ABubbleController, GameProgress, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(ABubbleController, RemainingTime, COND_None, REPNOTIFY_Always);
+
 	DOREPLIFETIME_CONDITION_NOTIFY(ABubbleController, IsInputLocked, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(ABubbleController, Team, COND_None, REPNOTIFY_Always);
 }
@@ -37,6 +42,26 @@ void ABubbleController::Client_SetupUIBindings_Implementation()
 		return;
 	}
 	InGameHUD->BindControllerDelegatesToUI(this);
+}
+
+void ABubbleController::OnRep_CleannerPoints()
+{
+	OnCleanerPointUpdate.Broadcast(CleanerPoints);
+}
+
+void ABubbleController::OnRep_ContaminatorPoints()
+{
+	OnContaminatorPointUpdate.Broadcast(ContaminatorPoints);
+}
+
+void ABubbleController::OnRep_GameProgress()
+{
+	OnProgressUpdate.Broadcast(GameProgress);
+}
+
+void ABubbleController::OnRep_RemainingTime()
+{
+	OnCooldownUpdate.Broadcast(RemainingTime);
 }
 
 void ABubbleController::OnPossess(APawn* InPawn)
@@ -63,6 +88,7 @@ void ABubbleController::AcknowledgePossession(APawn* P)
 	}
 	else if (IsValid(Cast<AFlatBubbleCharacter>(P)))
 	{
+		InGameHUD->Bind2DPawnDelegatesToUI(Cast<AFlatBubbleCharacter>(P));
 		InGameHUD->HideInteractionWidget();
 	}
 }
@@ -73,10 +99,11 @@ void ABubbleController::OnSessionMessegeReceived(FText Messege)//_Implementation
 	//OnLobbyMessegeChanged.Broadcast(Messege);
 }
 
-void ABubbleController::UpdateRemainingTime_Implementation(int value)
+void ABubbleController::UpdateRemainingTime(int value)
 {
 	//UE_LOG(LogTemp, Error, TEXT("%s: Remaining Time %d"), *GetName(), value);
-	OnCooldownUpdate.Broadcast(value);
+	RemainingTime = value;
+	OnCooldownUpdate.Broadcast(RemainingTime);
 }
 
 void ABubbleController::HideStartingWidget_Implementation()
@@ -104,19 +131,22 @@ void ABubbleController::ShowEndingWidget_Implementation(int value)
 	UE_LOG(LogTemp, Warning, TEXT("%s: ABubbleController::ShowEndingWidget"), *GetName());
 }
 
-void ABubbleController::OnCleanPoints_Implementation(int points)
+void ABubbleController::OnCleanPoints(int points)
 {
-	OnCleanerPointUpdate.Broadcast(points);
+	CleanerPoints = points;
+	OnCleanerPointUpdate.Broadcast(CleanerPoints);
 }
 
-void ABubbleController::OnContaminPoints_Implementation(int points)
+void ABubbleController::OnContaminPoints(int points)
 {
-	OnContaminatorPointUpdate.Broadcast(points);
+	ContaminatorPoints = points;
+	OnContaminatorPointUpdate.Broadcast(ContaminatorPoints);
 }
 
 void ABubbleController::OnProgress(float progress)
 {
-	OnProgressUpdate.Broadcast(progress);
+	GameProgress = progress;
+	OnProgressUpdate.Broadcast(GameProgress);
 }
 
 void ABubbleController::LeaveGame()

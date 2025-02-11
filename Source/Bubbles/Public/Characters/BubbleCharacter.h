@@ -71,6 +71,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* MoveAction;
 
+	UFUNCTION(BlueprintCallable, Client, Reliable)
+	void Client_OnEffectivenessUpdated(float CurrentEffectiveness, float MaxEffectiveness);
+
+	UFUNCTION(BlueprintCallable, Client, Reliable)
+	void Client_OnEnergyUpdated(float CurrentEnergy, float MaxEnergy);
+
 	UFUNCTION(Server, Reliable)
 	void Server_SetFocusedInteractable(UObject* InFocusedInteractable);
 
@@ -82,6 +88,8 @@ protected:
 
 	void TriggerInteraction();
 
+	virtual void BindCallbacksToDependencies();
+
 public:
 
 	UFUNCTION()
@@ -92,6 +100,11 @@ public:
 	virtual void PossessedBy(AController* NewController) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	void BroadcastInitialValues();
+
+	UFUNCTION(Client, Reliable)
+	void Client_BroadcastInitialValues();
 
 	UFUNCTION(Client, Reliable)
 	void Client_BindMappingContext();
@@ -120,4 +133,6 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FTextTransferSignature InteractIndicationTextDelegate;
+	FFloatTransferSignature OnEffectivenessUpdated;
+	FFloatTransferSignature OnEnergyUpdated;
 };

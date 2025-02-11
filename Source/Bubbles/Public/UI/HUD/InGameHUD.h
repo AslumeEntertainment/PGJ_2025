@@ -13,6 +13,7 @@ class UGameOverWidget;
 
 class ABubbleController;
 class AHumanBubble;
+class AFlatBubbleCharacter;
 
 UCLASS()
 class BUBBLES_API AInGameHUD : public AHUD
@@ -54,6 +55,9 @@ public:
 
 	UFUNCTION()
 	void BindPawnDelegatesToUI(AHumanBubble* Pawn);
+
+	UFUNCTION()
+	void Bind2DPawnDelegatesToUI(AFlatBubbleCharacter* Pawn);
 
 	UFUNCTION()
 	void ShowInGameOverlay();

@@ -62,7 +62,7 @@ void UInGameOverlay::SetBubbleEffectivenessPercent(float BubbleEffectivenessPerc
 	{
 		BubbleEffectivenessProgressBar->SetFillColorAndOpacity(TXT_ContaminatorScore->GetColorAndOpacity().GetSpecifiedColor());
 	}
-	EffectivenessProgressBar->SetPercent(FMath::Abs(BubbleEffectivenessPercent));
+	BubbleEffectivenessProgressBar->SetPercent(FMath::Abs(BubbleEffectivenessPercent));
 }
 
 void UInGameOverlay::SetBubbleEffectivenessVisibility(bool bIsVisible)

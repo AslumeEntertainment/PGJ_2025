@@ -74,6 +74,11 @@ void ABubblesGameMode::PostLogin(APlayerController* NewPlayer)
 	CheckLobbyReadiness();
 }
 
+void ABubblesGameMode::Logout(AController* Exiting)
+{
+	Super::Logout(Exiting);
+}
+
 
 void ABubblesGameMode::CheckLobbyReadiness()
 {
@@ -161,6 +166,11 @@ void ABubblesGameMode::Countdown() //tuka snqkuv delegat ima passvash ostavashta
 void ABubblesGameMode::EndGame() //tuka trqbva da podadesh na playerite widgeti dase vurnat kum main menu
 {
 	OnGameEnd.Broadcast(Spawner->GetWinner());
+}
+
+void ABubblesGameMode::ResetGame()
+{
+	//if(Playe)
 }
 
 void ABubblesGameMode::OnCleanPoints(int points)

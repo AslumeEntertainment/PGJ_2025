@@ -42,6 +42,16 @@ void ABubbleCharacter::Server_SetFocusedInteractable_Implementation(UObject* InF
 	SetFocusedInteractable(InFocusedInteractable);
 }
 
+void ABubbleCharacter::Client_OnEffectivenessUpdated_Implementation(float CurrentEffectiveness, float MaxEffectiveness)
+{
+	OnEffectivenessUpdated.Broadcast(CurrentEffectiveness / MaxEffectiveness);
+}
+
+void ABubbleCharacter::Client_OnEnergyUpdated_Implementation(float CurrentEnergy, float MaxEnergy)
+{
+	OnEnergyUpdated.Broadcast(CurrentEnergy / MaxEnergy);
+}
+
 void ABubbleCharacter::SetFocusedInteractable(UObject* InFocusedInteractable)
 {
 	if (HasAuthority() == false)
@@ -159,6 +169,28 @@ void ABubbleCharacter::TriggerInteraction()
 	AbilitySystemComponent->HandleGameplayEvent(InteractionAbilityTag, &Data);
 }
 
+void ABubbleCharacter::BindCallbacksToDependencies()
+{
+	if (IsValid(AbilitySystemComponent) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::BindCallbacksToDependencies IsValid(AbilitySystemComponent) == false"));
+		return;
+	}
+	if (IsValid(AttributeSet) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::BindCallbacksToDependencies IsValid(AttributeSet) == false"));
+		return;
+	}
+
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetEffectivenessAttribute()).AddLambda
+	(
+		[this](const FOnAttributeChangeData& Data)
+		{
+			Client_OnEffectivenessUpdated(Data.NewValue, AttributeSet->GetMaxEffectiveness());
+		}
+	);
+}
+
 void ABubbleCharacter::UpdateInteractionText(FText InteractableName, bool bCanInteract)
 {
 	if (bCanInteract)
@@ -211,6 +243,8 @@ void ABubbleCharacter::InitCharacterDefaults()
 	{
 		GEHandle = AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
 	}
+	
+	BindCallbacksToDependencies();
 
 	bHasBeenInited = true;
 }
@@ -236,6 +270,29 @@ void ABubbleCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	{
 		UE_LOG(LogTemp, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+}
+
+void ABubbleCharacter::BroadcastInitialValues()
+{
+	if (HasAuthority() == false)
+	{
+		FTimerHandle BroadcastInitialValuesTimerHandle;
+		GetWorldTimerManager().SetTimer(BroadcastInitialValuesTimerHandle, this, &ABubbleCharacter::Client_BroadcastInitialValues, 0.5f, false);
+	}
+
+	if (IsValid(AttributeSet) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::BroadcastInitialValues IsValid(AttributeSet) == false"));
+		return;
+	}
+
+	Client_OnEffectivenessUpdated(AttributeSet->GetEffectiveness(), AttributeSet->GetMaxEffectiveness());
+	Client_OnEnergyUpdated(AttributeSet->GetEnergy(), AttributeSet->GetMaxEnergy());
+}
+
+void ABubbleCharacter::Client_BroadcastInitialValues_Implementation()
+{
+	BroadcastInitialValues();
 }
 
 void ABubbleCharacter::Client_BindMappingContext_Implementation()

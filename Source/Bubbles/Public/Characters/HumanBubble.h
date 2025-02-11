@@ -22,8 +22,6 @@ class AHumanBubble : public ABubbleCharacter
 {
 	GENERATED_BODY()
 
-	bool bAreAttributesBoundToUI = false;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
 
@@ -42,12 +40,6 @@ class AHumanBubble : public ABubbleCharacter
 	UPROPERTY(EditDefaultsOnly, Category = "CustomValues|Ability")
 	FGameplayTagContainer AbilityTag;
 
-	UFUNCTION(BlueprintCallable, Client, Reliable)
-	void Client_OnEffectivenessUpdated(float CurrentEffectiveness, float MaxEffectiveness);
-
-	UFUNCTION(BlueprintCallable, Client, Reliable)
-	void Client_OnEnergyUpdated(float CurrentEnergy, float MaxEnergy);
-
 public:
 
 	AHumanBubble();
@@ -56,7 +48,7 @@ protected:
 
 	virtual void PossessedBy(AController* NewController) override;
 
-	void BindCallbacksToDependencies();
+	virtual void BindCallbacksToDependencies() override;
 
 	virtual void Move(const FInputActionValue& Value) override;
 
@@ -81,17 +73,9 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void BroadcastInitialValues();
-
-	UFUNCTION(Client, Reliable)
-	void Client_BroadcastInitialValues();
-
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-
-	FFloatTransferSignature OnEffectivenessUpdated;
-	FFloatTransferSignature OnEnergyUpdated;
 
 };
 

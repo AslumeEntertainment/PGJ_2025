@@ -62,15 +62,15 @@ AHumanBubble::AHumanBubble()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void AHumanBubble::Client_OnEffectivenessUpdated_Implementation(float CurrentEffectiveness, float MaxEffectiveness)
-{
-	OnEffectivenessUpdated.Broadcast(CurrentEffectiveness / MaxEffectiveness);
-}
-
-void AHumanBubble::Client_OnEnergyUpdated_Implementation(float CurrentEnergy, float MaxEnergy)
-{
-	OnEnergyUpdated.Broadcast(CurrentEnergy / MaxEnergy);
-}
+//void AHumanBubble::Client_OnEffectivenessUpdated_Implementation(float CurrentEffectiveness, float MaxEffectiveness)
+//{
+//	OnEffectivenessUpdated.Broadcast(CurrentEffectiveness / MaxEffectiveness);
+//}
+//
+//void AHumanBubble::Client_OnEnergyUpdated_Implementation(float CurrentEnergy, float MaxEnergy)
+//{
+//	OnEnergyUpdated.Broadcast(CurrentEnergy / MaxEnergy);
+//}
 
 void AHumanBubble::Tick(float DeltaTime)
 {
@@ -115,11 +115,7 @@ void AHumanBubble::EmitInteractionChecker()
 
 void AHumanBubble::TriggerAbility()
 {
-	//FGameplayEventData Data = FGameplayEventData();
-	//Data.Instigator = this;
-	//AbilitySystemComponent->HandleGameplayEvent(AbilityTag, &Data);
 	AbilitySystemComponent->TryActivateAbilitiesByTag(AbilityTag);
-	//AbilitySystemComponent->Try
 }
 
 void AHumanBubble::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -141,15 +137,12 @@ void AHumanBubble::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 void AHumanBubble::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
-
-	if (bAreAttributesBoundToUI == false)
-	{
-		BindCallbacksToDependencies();
-	}
 }
 
 void AHumanBubble::BindCallbacksToDependencies()
 {
+	Super::BindCallbacksToDependencies();
+
 	if (IsValid(AbilitySystemComponent) == false)
 	{
 		UE_LOG(LogTemp, Error, TEXT("AHumanBubble::BindCallbacksToDependencies IsValid(AbilitySystemComponent) == false"));
@@ -161,14 +154,6 @@ void AHumanBubble::BindCallbacksToDependencies()
 		return;
 	}
 
-	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetEffectivenessAttribute()).AddLambda
-	(
-		[this](const FOnAttributeChangeData& Data)
-		{
-			Client_OnEffectivenessUpdated(Data.NewValue, AttributeSet->GetMaxEffectiveness());
-		}
-	);
-
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetEnergyAttribute()).AddLambda
 	(
 		[this](const FOnAttributeChangeData& Data)
@@ -176,31 +161,6 @@ void AHumanBubble::BindCallbacksToDependencies()
 			Client_OnEnergyUpdated(Data.NewValue, AttributeSet->GetMaxEnergy());
 		}
 	);
-
-	bAreAttributesBoundToUI = true;
-}
-
-void AHumanBubble::BroadcastInitialValues()
-{
-	if (HasAuthority() == false)
-	{
-		FTimerHandle BroadcastInitialValuesTimerHandle;
-		GetWorldTimerManager().SetTimer(BroadcastInitialValuesTimerHandle, this, &AHumanBubble::Client_BroadcastInitialValues, 0.5f, false);
-	}
-
-	if (IsValid(AttributeSet) == false)
-	{
-		UE_LOG(LogTemp, Error, TEXT("AHumanBubble::BroadcastInitialValues IsValid(AttributeSet) == false"));
-		return;
-	}
-
-	Client_OnEffectivenessUpdated(AttributeSet->GetEffectiveness(), AttributeSet->GetMaxEffectiveness());
-	Client_OnEnergyUpdated(AttributeSet->GetEnergy(), AttributeSet->GetMaxEnergy());
-}
-
-void AHumanBubble::Client_BroadcastInitialValues_Implementation()
-{
-	BroadcastInitialValues();
 }
 
 void AHumanBubble::Move(const FInputActionValue& Value)

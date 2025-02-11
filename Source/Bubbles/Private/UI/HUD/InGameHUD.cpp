@@ -10,6 +10,7 @@
 #include "UI/Widgets/GameOverWidget.h"
 #include "UI/Widgets/LoadingScreen.h"
 #include "UI/Widgets/InGameOverlay.h"
+#include "Characters/FlatBubbleCharacter.h"
 #include "Characters/HumanBubble.h"
 #include "BubbleController.h"
 
@@ -74,6 +75,24 @@ void AInGameHUD::BindPawnDelegatesToUI(AHumanBubble* Pawn)
 	{
 		Pawn->InteractIndicationTextDelegate.AddDynamic(InteractionWidget, &UInteractionWidget::SetInteractionText);
 	}
+
+	InGameOverlay->SetBubbleEffectivenessVisibility(false);
+	Pawn->BroadcastInitialValues();
+}
+
+void AInGameHUD::Bind2DPawnDelegatesToUI(AFlatBubbleCharacter* Pawn)
+{
+	if (IsValid(Pawn) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AInGameHUD::BindPlayerDelegatesToUI IsValid(HumanBubble) == false"));
+		return;
+	}
+	if (Pawn->OnEffectivenessUpdated.IsBound() == false)
+	{
+		Pawn->OnEffectivenessUpdated.AddDynamic(InGameOverlay, &UInGameOverlay::SetBubbleEffectivenessPercent);
+	}
+	
+	InGameOverlay->SetBubbleEffectivenessVisibility(true);
 	Pawn->BroadcastInitialValues();
 }
 
