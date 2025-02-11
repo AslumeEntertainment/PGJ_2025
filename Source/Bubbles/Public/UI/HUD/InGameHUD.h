@@ -22,8 +22,6 @@ class BUBBLES_API AInGameHUD : public AHUD
 	
 protected:
 
-	virtual void BeginPlay() override;
-
 	UPROPERTY(EditDefaultsOnly, Category = "WidgetClasses");
 	TSubclassOf<UInteractionWidget> InteractionWidgetClass;
 

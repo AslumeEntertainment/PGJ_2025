@@ -15,15 +15,6 @@
 #include "BubbleController.h"
 
 
-void AInGameHUD::BeginPlay()
-{
-	if (PlayerOwner)
-	{
-		PlayerOwner->SetInputMode(FInputModeGameOnly());
-		PlayerOwner->bShowMouseCursor = false;
-	}
-}
-
 void AInGameHUD::BindControllerDelegatesToUI(ABubbleController* Controller)
 {
 	if (IsValid(Controller) == false)
@@ -58,6 +49,11 @@ void AInGameHUD::BindControllerDelegatesToUI(ABubbleController* Controller)
 
 void AInGameHUD::BindPawnDelegatesToUI(AHumanBubble* Pawn)
 {
+	if (PlayerOwner)
+	{
+		PlayerOwner->SetInputMode(FInputModeGameOnly());
+		PlayerOwner->bShowMouseCursor = false;
+	}
 	if (IsValid(Pawn) == false)
 	{
 		UE_LOG(LogTemp, Error, TEXT("AInGameHUD::BindPlayerDelegatesToUI IsValid(HumanBubble) == false"));
@@ -112,6 +108,11 @@ void AInGameHUD::ShowInGameOverlay()
 
 void AInGameHUD::ShowLoadingScreen(FText LoadingText)
 {
+	if (PlayerOwner)
+	{
+		PlayerOwner->SetInputMode(FInputModeUIOnly());
+		PlayerOwner->bShowMouseCursor = true;
+	}
 	if (IsValid(LoadingScreen) == false)
 	{
 		UE_LOG(LogTemp, Error, TEXT("AInGameHUD::ShowLoadingScreen IsValid(LoadingScreen) == false"));

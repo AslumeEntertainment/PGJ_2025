@@ -162,6 +162,7 @@ void APaintableItem::InteractRequest(AController* InteractingCharacter)
 
 	InteractingPlayer = Cast<ABubbleController>(InteractingCharacter);
 	InteractingPlayer->Client_SetInputMode(EInputMode::UIOnly);
+	InteractingPlayer->StopMovement();
 
 	AHumanBubble* PlayerPawn = Cast<AHumanBubble>(InteractingCharacter->GetPawn());
 	if (IsValid(PlayerPawn))
