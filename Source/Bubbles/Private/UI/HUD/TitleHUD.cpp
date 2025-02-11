@@ -8,6 +8,7 @@
 
 #include "UI/Widgets/SessionSelectorMenu.h"
 #include "UI/Widgets/SessionButtonWidget.h"
+#include "UI/Widgets/SessionCreatorMenu.h"
 #include "UI/Widgets/LoadingScreen.h"
 #include "UI/Widgets/HostJoinMenu.h"
 #include "UI/Widgets/TitleMenu.h"
@@ -38,17 +39,22 @@ void ATitleHUD::BeginPlay()
 		PlayerOwner->bShowMouseCursor = true;
 	}
 
-	TitleMenu = CreateWidget<UTitleMenu>(UGameplayStatics::GetGameInstance(World), TitleMenuClass);
-	HostJoinMenu = CreateWidget<UHostJoinMenu>(UGameplayStatics::GetGameInstance(World), HostJoinMenuClass);
-	LoadingScreen = CreateWidget<ULoadingScreen>(UGameplayStatics::GetGameInstance(World), LoadingScreenClass);
-	SessionSelectorMenu = CreateWidget<USessionSelectorMenu>(UGameplayStatics::GetGameInstance(World), SessionSelectorMenuClass);
+	TitleMenu = CreateWidget<UTitleMenu>(PlayerOwner, TitleMenuClass);
+	HostJoinMenu = CreateWidget<UHostJoinMenu>(PlayerOwner, HostJoinMenuClass);
+	LoadingScreen = CreateWidget<ULoadingScreen>(PlayerOwner, LoadingScreenClass);
+	SessionCreatorMenu = CreateWidget<USessionCreatorMenu>(PlayerOwner, SessionCreatorMenuClass);
+	SessionSelectorMenu = CreateWidget<USessionSelectorMenu>(PlayerOwner, SessionSelectorMenuClass);
 
 	TitleMenu->StartClicked.AddDynamic(this, &ATitleHUD::OpenHostJoinMenu);
 	TitleMenu->ExitClicked.AddDynamic(GameMode, &ATitleGameMode::ExitGame);
 
-	HostJoinMenu->HostClicked.AddDynamic(GameMode, &ATitleGameMode::HostSession);
+	//HostJoinMenu->HostClicked.AddDynamic(GameMode, &ATitleGameMode::HostSession);
+	HostJoinMenu->HostClicked.AddDynamic(this, &ATitleHUD::OpenSessionCreatorMenu);
 	HostJoinMenu->JoinClicked.AddDynamic(this, &ATitleHUD::ShowSessionSelectorMenu);
 	HostJoinMenu->BackClicked.AddDynamic(this, &ATitleHUD::OpenTitleMenu);
+
+	SessionCreatorMenu->BackClicked.AddDynamic(this, &ATitleHUD::OpenHostJoinMenu);
+	SessionCreatorMenu->StartClicked.AddDynamic(GameMode, &ATitleGameMode::HostSession);
 
 	SessionSelectorMenu->BackClicked.AddDynamic(this, &ATitleHUD::OpenHostJoinMenu);
 	SessionSelectorMenu->RefreshClicked.AddDynamic(this, &ATitleHUD::ShowSessionSelectorMenu);
@@ -102,6 +108,19 @@ void ATitleHUD::RemoveLoadingScreen()
 	{
 		LoadingScreen->RemoveFromParent();
 	}
+}
+
+void ATitleHUD::OpenSessionCreatorMenu()
+{
+	ClearScreen();
+
+	if (IsValid(SessionCreatorMenu) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ATitleHUD::OpenSessionCreatorMenu IsValid(SessionCreatorMenu) == false"));
+		return;
+	}
+
+	SessionCreatorMenu->AddToViewport();
 }
 
 void ATitleHUD::ShowSessionSelectorMenu()

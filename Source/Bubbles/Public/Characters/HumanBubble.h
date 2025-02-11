@@ -35,16 +35,22 @@ class AHumanBubble : public ABubbleCharacter
 	UInputAction* InteractAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* AbilityAction;
+	UInputAction* UltimateAbilityAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "CustomValues|Ability")
-	FGameplayTagContainer AbilityTag;
+	FGameplayTagContainer UltimateAbilityTags;
+
+	UPROPERTY(EditDefaultsOnly, Category = "CustomValues|Ability")
+	FGameplayTagContainer InflateArmAbilityTags;
 
 public:
 
 	AHumanBubble();
 
 protected:
+
+	UPROPERTY(Replicated)
+	bool bIsArmless = false;
 
 	virtual void PossessedBy(AController* NewController) override;
 
@@ -58,7 +64,9 @@ protected:
 
 	virtual void EmitInteractionChecker() override;
 
-	void TriggerAbility();
+	void TriggerInteraction() override;
+
+	void TriggerUltimateAbility();
 
 public:
 
@@ -72,6 +80,10 @@ public:
 	UAnimMontage* InteractAnimation;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	void SetIsArmless(bool NewValue);
+
+	FORCEINLINE bool IsArmless() const { return bIsArmless; }
 
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 

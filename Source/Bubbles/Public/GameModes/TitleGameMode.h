@@ -29,7 +29,7 @@ public:
 	FTextArrayTransferSignature OnSessionsFound;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void HostSession();
+	void HostSession(const FString& SessionName, bool bIsPublic);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void FindSessions();

@@ -9,6 +9,7 @@
 class UTitleMenu;
 class UHostJoinMenu;
 class ULoadingScreen;
+class USessionCreatorMenu;
 class USessionSelectorMenu;
 
 UCLASS()
@@ -30,6 +31,9 @@ protected:
 	TSubclassOf<ULoadingScreen> LoadingScreenClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "WidgetClasses");
+	TSubclassOf<USessionCreatorMenu> SessionCreatorMenuClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "WidgetClasses");
 	TSubclassOf<USessionSelectorMenu> SessionSelectorMenuClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
@@ -40,6 +44,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	ULoadingScreen* LoadingScreen;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	USessionCreatorMenu* SessionCreatorMenu;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	USessionSelectorMenu* SessionSelectorMenu;
@@ -57,6 +64,9 @@ public:
 
 	UFUNCTION()
 	void RemoveLoadingScreen();
+
+	UFUNCTION()
+	void OpenSessionCreatorMenu();
 
 	UFUNCTION()
 	void ShowSessionSelectorMenu();

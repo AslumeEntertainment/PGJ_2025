@@ -7,9 +7,10 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Controller.h"
-#include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
+#include "Net/UnrealNetwork.h"
 
 #include "AbilitySystemComponent.h"
 #include "GAS/BubbleAttributeSet.h"
@@ -20,6 +21,12 @@
 //////////////////////////////////////////////////////////////////////////
 // ABubblesCharacter
 
+void AHumanBubble::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION_NOTIFY(AHumanBubble, bIsArmless, COND_None, REPNOTIFY_Always);
+}
 
 AHumanBubble::AHumanBubble()
 {
@@ -62,16 +69,6 @@ AHumanBubble::AHumanBubble()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-//void AHumanBubble::Client_OnEffectivenessUpdated_Implementation(float CurrentEffectiveness, float MaxEffectiveness)
-//{
-//	OnEffectivenessUpdated.Broadcast(CurrentEffectiveness / MaxEffectiveness);
-//}
-//
-//void AHumanBubble::Client_OnEnergyUpdated_Implementation(float CurrentEnergy, float MaxEnergy)
-//{
-//	OnEnergyUpdated.Broadcast(CurrentEnergy / MaxEnergy);
-//}
-
 void AHumanBubble::Tick(float DeltaTime)
 {
 	// Call the base class  
@@ -113,9 +110,19 @@ void AHumanBubble::EmitInteractionChecker()
 	CheckForInteractables(HitResult);
 }
 
-void AHumanBubble::TriggerAbility()
+void AHumanBubble::TriggerInteraction()
 {
-	AbilitySystemComponent->TryActivateAbilitiesByTag(AbilityTag);
+	if (bIsArmless)
+	{
+		AbilitySystemComponent->TryActivateAbilitiesByTag(InflateArmAbilityTags);
+		return;
+	}
+	AbilitySystemComponent->TryActivateAbilitiesByTag(InteractionAbilityTags);
+}
+
+void AHumanBubble::TriggerUltimateAbility()
+{
+	AbilitySystemComponent->TryActivateAbilitiesByTag(UltimateAbilityTags);
 }
 
 void AHumanBubble::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -125,13 +132,18 @@ void AHumanBubble::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) 
 	{
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &AHumanBubble::TriggerInteraction);
-		EnhancedInputComponent->BindAction(AbilityAction, ETriggerEvent::Triggered, this, &AHumanBubble::TriggerAbility);
+		EnhancedInputComponent->BindAction(UltimateAbilityAction, ETriggerEvent::Triggered, this, &AHumanBubble::TriggerUltimateAbility);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AHumanBubble::Look);
 	}
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+}
+
+void AHumanBubble::SetIsArmless(bool NewValue)
+{
+	bIsArmless = NewValue;
 }
 
 void AHumanBubble::PossessedBy(AController* NewController)

@@ -47,7 +47,7 @@ protected:
 	float InteractionRange = 100;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Interaction")
-	FGameplayTag InteractionAbilityTag;
+	FGameplayTagContainer InteractionAbilityTags;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Debug")
 	bool bShouldDrawDebug = true;
@@ -64,7 +64,6 @@ protected:
 	UPROPERTY(Transient)
 	UBubbleAttributeSet* AttributeSet;
 
-	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext;
 
@@ -86,7 +85,7 @@ protected:
 
 	bool CheckForInteractables(FHitResult HitResult);
 
-	void TriggerInteraction();
+	virtual void TriggerInteraction();
 
 	virtual void BindCallbacksToDependencies();
 
@@ -106,8 +105,8 @@ public:
 	UFUNCTION(Client, Reliable)
 	void Client_BroadcastInitialValues();
 
-	UFUNCTION(Client, Reliable)
-	void Client_BindMappingContext();
+	/*UFUNCTION(Client, Reliable)
+	void Client_BindMappingContext();*/
 
 	UFUNCTION(Client, Reliable)
 	void Client_UnbindMappingContext();
@@ -130,6 +129,8 @@ public:
 	virtual class UAbilitySystemComponent* GetAbilitySystemComponent() const override { return AbilitySystemComponent; };
 
 	UObject* GetFocusedInteractableObject() { return FocusedInteractableObject; }
+
+	UInputMappingContext* GetDefaultInputMappingContext() { return DefaultMappingContext; }
 
 	UPROPERTY(BlueprintAssignable)
 	FTextTransferSignature InteractIndicationTextDelegate;

@@ -132,8 +132,6 @@ void AInGameHUD::RemoveLoadingScreen()
 
 void AInGameHUD::ShowInteractionWidget()
 {
-	UE_LOG(LogTemp, Error, TEXT("AInGameHUD::ShowInteractionWidget"));
-
 	if (IsValid(InteractionWidget) == false)
 	{
 		UE_LOG(LogTemp, Error, TEXT("AInGameHUD::ShowInteractionWidget IsValid(InteractionWidget) == false"));

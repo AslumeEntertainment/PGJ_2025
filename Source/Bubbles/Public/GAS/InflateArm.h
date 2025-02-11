@@ -6,12 +6,31 @@
 #include "Abilities/GameplayAbility.h"
 #include "InflateArm.generated.h"
 
-/**
- * 
- */
+class AHumanBubble;
+
 UCLASS()
 class BUBBLES_API UInflateArm : public UGameplayAbility
 {
 	GENERATED_BODY()
 	
+public:
+
+	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+
+protected:
+
+	AHumanBubble* Player;
+
+	UPROPERTY(EditDefaultsOnly)
+	FGameplayTag ContinueAbilityTag;
+
+	UPROPERTY(EditDefaultsOnly)
+	UAnimMontage* AbilityAnimationMontage;
+
+	UFUNCTION()
+	void OnAnimMontageCompleted();
+
+	UFUNCTION()
+	void OnEventReceived(FGameplayEventData Payload);
+
 };

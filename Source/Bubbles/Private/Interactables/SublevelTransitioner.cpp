@@ -4,12 +4,14 @@
 #include "Interactables/SublevelTransitioner.h"
 
 #include "GameFramework/PlayerController.h"
+#include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "GAS/BubbleAttributeSet.h"
 #include "Camera/CameraActor.h"
 
 #include "Characters/FlatBubbleCharacter.h"
 #include "Characters/HumanBubble.h"
+#include "BubbleController.h"
 #include "UI/HUD/InGameHUD.h"
 
 void ASublevelTransitioner::InteractRequest(AController* InteractingCharacter)
@@ -21,7 +23,7 @@ void ASublevelTransitioner::InteractRequest(AController* InteractingCharacter)
 		return;
 	}
 
-	APlayerController* PlayerCont = Cast<APlayerController>(InteractingCharacter);
+	ABubbleController* PlayerCont = Cast<ABubbleController>(InteractingCharacter);
 	if (IsValid(PlayerCont) == false)
 	{
 		UE_LOG(LogTemp, Error, TEXT("ASublevelTransitioner::InteractRequest IsValid(PlayerCont) == false"));
@@ -51,10 +53,9 @@ void ASublevelTransitioner::InteractRequest(AController* InteractingCharacter)
 		UE_LOG(LogTemp, Error, TEXT("ASublevelTransitioner::InteractRequest IsValid(FlatBubble) == false"));
 		return;
 	}
-
+	PlayerPawn->SetIsArmless(true);
 	PlayerPawn->Client_UnbindMappingContext();
 	PlayerCont->Possess(FlatBubble);
-	FlatBubble->Client_BindMappingContext();
 
 	PlayerCont->SetViewTargetWithBlend(SublevelCamera);
 	PlayerCont->ClientSetRotation(FlatBubbleSpawnRotation);

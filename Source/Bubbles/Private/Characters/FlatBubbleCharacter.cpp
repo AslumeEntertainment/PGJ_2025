@@ -45,7 +45,6 @@ void AFlatBubbleCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
-	//SetActorRotation(FRotator(0, 0, 0));
 	InteractionCapsule->OnComponentBeginOverlap.AddDynamic(this, &AFlatBubbleCharacter::OnInteractionCapsuleBeginOverlap);
 }
 
@@ -58,17 +57,24 @@ void AFlatBubbleCharacter::OnRep_PlayerState()
 
 void AFlatBubbleCharacter::StartCrouch()
 {
+	float ScaleX = GetMesh()->GetRelativeScale3D().X;
+	GetMesh()->SetRelativeScale3D(FVector(ScaleX, ScaleX, ScaleX / 2));
 	Crouch();
 }
 
 void AFlatBubbleCharacter::StopCrouch()
 {
+	float ScaleX = GetMesh()->GetRelativeScale3D().X;
+	GetMesh()->SetRelativeScale3D(FVector(ScaleX, ScaleX, ScaleX));
 	UnCrouch();
 }
 
 void AFlatBubbleCharacter::OnInteractionCapsuleBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Flat bubble has overlaped"));
+	if (bShouldDrawDebug)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Flat bubble has overlaped"));
+	}
 	if (CheckForInteractables(SweepResult))
 	{
 		TriggerInteraction();

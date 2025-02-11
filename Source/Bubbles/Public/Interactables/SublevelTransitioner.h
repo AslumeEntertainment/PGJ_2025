@@ -7,6 +7,7 @@
 #include "SublevelTransitioner.generated.h"
 
 class AFlatBubbleCharacter;
+class UGameplayEffect;
 
 UCLASS()
 class BUBBLES_API ASublevelTransitioner : public AItemBase

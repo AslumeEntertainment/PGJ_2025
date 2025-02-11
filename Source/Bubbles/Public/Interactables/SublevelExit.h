@@ -15,7 +15,7 @@ class BUBBLES_API ASublevelExit : public AItemBase
 protected:
 
 	UPROPERTY(EditAnywhere, Category = "SublevelExitProperties")
-	bool bIsExitSafe = false;
+	bool bIsSafeExit = false;
 
 public:
 

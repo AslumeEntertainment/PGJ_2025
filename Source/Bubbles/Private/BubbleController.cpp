@@ -4,6 +4,7 @@
 #include "BubbleController.h"
 
 #include "Headers/GeneralDelegates.h"
+#include "EnhancedInputSubsystems.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
@@ -23,6 +24,7 @@ void ABubbleController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME_CONDITION_NOTIFY(ABubbleController, IsInputLocked, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(ABubbleController, Team, COND_None, REPNOTIFY_Always);
 }
+
 void ABubbleController::Client_SetInputMode_Implementation(EInputMode  InputMode)
 {
 	switch (InputMode)
@@ -77,20 +79,52 @@ void ABubbleController::AcknowledgePossession(APawn* P)
 	AInGameHUD* InGameHUD = GetHUD<AInGameHUD>();
 	if (IsValid(InGameHUD) == false)
 	{
-		UE_LOG(LogTemp, Error, TEXT("ABubbleController::AcknowledgePossession IsValid(InGameHUD) == false"))
+		UE_LOG(LogTemp, Error, TEXT("ABubbleController::AcknowledgePossession IsValid(InGameHUD) == false"));
 		return;
 	}
 
-	if (IsValid(Cast<AHumanBubble>(P)))
+	ABubbleCharacter* BubblePawn = Cast<ABubbleCharacter>(P);
+	if (IsValid(BubblePawn) == false)
 	{
-		InGameHUD->BindPawnDelegatesToUI(Cast<AHumanBubble>(P));
+		UE_LOG(LogTemp, Error, TEXT("ABubbleController::AcknowledgePossession IsValid(BubblePawn) == false"));
+		return;
+	}
+	
+	BindPawnMappingContext(BubblePawn);
+
+	if (IsValid(Cast<AHumanBubble>(BubblePawn)))
+	{
+		InGameHUD->BindPawnDelegatesToUI(Cast<AHumanBubble>(BubblePawn));
 		InGameHUD->ShowInteractionWidget();
 	}
-	else if (IsValid(Cast<AFlatBubbleCharacter>(P)))
+	else if (IsValid(Cast<AFlatBubbleCharacter>(BubblePawn)))
 	{
-		InGameHUD->Bind2DPawnDelegatesToUI(Cast<AFlatBubbleCharacter>(P));
+		InGameHUD->Bind2DPawnDelegatesToUI(Cast<AFlatBubbleCharacter>(BubblePawn));
 		InGameHUD->HideInteractionWidget();
 	}
+}
+
+void ABubbleController::BindPawnMappingContext(ABubbleCharacter* BubblePawn)
+{
+	UEnhancedInputLocalPlayerSubsystem* InputSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
+	if (IsValid(InputSystem) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleController::BindPawnMappingContext IsValid(InputSystem) == false"));
+		return;
+	}
+	InputSystem->AddMappingContext(BubblePawn->GetDefaultInputMappingContext(), 0);
+}
+
+void ABubbleController::UnbindPawnMappingContext(ABubbleCharacter* BubblePawn)
+{
+	UEnhancedInputLocalPlayerSubsystem* InputSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
+	if (IsValid(InputSystem) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleController::UnbindPawnMappingContext IsValid(InputSystem) == false"));
+		return;
+	}
+
+	InputSystem->RemoveMappingContext(BubblePawn->GetDefaultInputMappingContext());
 }
 
 void ABubbleController::OnSessionMessegeReceived(FText Messege)//_Implementation(FText Messege)
@@ -108,13 +142,8 @@ void ABubbleController::UpdateRemainingTime(int value)
 
 void ABubbleController::HideStartingWidget_Implementation()
 {
-	if (OnGameStarted.IsBound())
-	{
-		OnGameStarted.Broadcast();
-	}
-	else UE_LOG(LogTemp, Error, TEXT("%s: ABubbleController::HideStartingWidget OnGameStarted is not bound!!!"), *GetName());
-	
-	UE_LOG(LogTemp, Warning, TEXT("%s: ABubbleController::HideStartingWidget"), *GetName());
+	OnGameStarted.Broadcast();
+	//UE_LOG(LogTemp, Warning, TEXT("%s: ABubbleController::HideStartingWidget"), *GetName());
 }
 
 void ABubbleController::ShowEndingWidget_Implementation(int value)

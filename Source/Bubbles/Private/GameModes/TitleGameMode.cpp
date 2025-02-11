@@ -6,7 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 
 
-void ATitleGameMode::HostSession_Implementation()
+void ATitleGameMode::HostSession_Implementation(const FString& SessionName, bool bIsPublic)
 {
 	UE_LOG(LogTemp, Error, TEXT("No Blueprint implementation exists for ATitleGameMode::HostSession"));
 }

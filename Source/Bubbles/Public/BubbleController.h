@@ -7,6 +7,8 @@
 #include "Headers/GeneralDelegates.h"
 #include "BubbleController.generated.h"
 
+class ABubbleCharacter;
+
 UENUM(BlueprintType)
 enum class EInputMode : uint8
 {
@@ -64,6 +66,10 @@ public:
 	void OnPossess(APawn* InPawn) override;
 
 	void AcknowledgePossession(APawn* P) override;
+
+	void BindPawnMappingContext(ABubbleCharacter* BubblePawn);
+
+	void UnbindPawnMappingContext(ABubbleCharacter* BubblePawn);
 
 	UFUNCTION()
 	void OnSessionMessegeReceived(FText Messege);

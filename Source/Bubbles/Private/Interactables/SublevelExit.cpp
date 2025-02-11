@@ -4,12 +4,14 @@
 #include "Interactables/SublevelExit.h"
 
 #include "GameFramework/PlayerController.h"
+#include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "GAS/BubbleAttributeSet.h"
 #include "Camera/CameraActor.h"
 
 #include "Characters/FlatBubbleCharacter.h"
 #include "Characters/HumanBubble.h"
+#include "BubbleController.h"
 #include "UI/HUD/InGameHUD.h"
 
 void ASublevelExit::InteractRequest(AController* InteractingCharacter)
@@ -19,7 +21,7 @@ void ASublevelExit::InteractRequest(AController* InteractingCharacter)
 		return;
 	}
 
-	APlayerController* PlayerCont = Cast<APlayerController>(InteractingCharacter);
+	ABubbleController* PlayerCont = Cast<ABubbleController>(InteractingCharacter);
 	if (IsValid(PlayerCont) == false)
 	{
 		UE_LOG(LogTemp, Error, TEXT("ASublevelExit::InteractRequest IsValid(PlayerCont) == false"));
@@ -39,11 +41,12 @@ void ASublevelExit::InteractRequest(AController* InteractingCharacter)
 		return;
 	}
 
-	if (bIsExitSafe)
+	if (bIsSafeExit)
 	{
 		float CurrentEffectiveness = FlatBubble->GetAbilitySystemComponent()->GetNumericAttributeBase(UBubbleAttributeSet::GetEffectivenessAttribute());
 		FlatBubble->HumanBubbleOwner->GetAbilitySystemComponent()->SetNumericAttributeBase(UBubbleAttributeSet::GetEffectivenessAttribute(), CurrentEffectiveness);
 
+		FlatBubble->HumanBubbleOwner->SetIsArmless(false);
 		//restore arm
 	}
 	else
@@ -53,7 +56,6 @@ void ASublevelExit::InteractRequest(AController* InteractingCharacter)
 
 	FlatBubble->Client_UnbindMappingContext();
 	PlayerCont->Possess(FlatBubble->HumanBubbleOwner);
-	FlatBubble->HumanBubbleOwner->Client_BindMappingContext();
 
 	FlatBubble->Destroy();
 }

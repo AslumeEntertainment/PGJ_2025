@@ -163,10 +163,10 @@ bool ABubbleCharacter::CheckForInteractables(FHitResult HitResult)
 
 void ABubbleCharacter::TriggerInteraction()
 {
-	UE_LOG(LogTemp, Warning, TEXT("%s: Interact"), *GetName());
+	AbilitySystemComponent->TryActivateAbilitiesByTag(InteractionAbilityTags);
 
-	FGameplayEventData Data = FGameplayEventData();
-	AbilitySystemComponent->HandleGameplayEvent(InteractionAbilityTag, &Data);
+	/*FGameplayEventData Data = FGameplayEventData();
+	AbilitySystemComponent->HandleGameplayEvent(InteractionAbilityTag, &Data);*/
 }
 
 void ABubbleCharacter::BindCallbacksToDependencies()
@@ -253,7 +253,7 @@ void ABubbleCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
-	Client_BindMappingContext();
+	//Client_BindMappingContext();
 
 	InitCharacterDefaults();
 }
@@ -295,23 +295,23 @@ void ABubbleCharacter::Client_BroadcastInitialValues_Implementation()
 	BroadcastInitialValues();
 }
 
-void ABubbleCharacter::Client_BindMappingContext_Implementation()
-{
-	APlayerController* PlayerController = Cast<APlayerController>(GetController());
-	if (IsValid(PlayerController) == false)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::Client_BindMappingContext IsValid(PlayerController) == false"));
-		return;
-	}
-	UEnhancedInputLocalPlayerSubsystem* InputSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
-	if (IsValid(InputSystem) == false)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::Client_BindMappingContext IsValid(InputSystem) == false"));
-		return;
-	}
-
-	InputSystem->AddMappingContext(DefaultMappingContext, 0);
-}
+//void ABubbleCharacter::Client_BindMappingContext_Implementation()
+//{
+//	/*APlayerController* PlayerController = Cast<APlayerController>(GetController());
+//	if (IsValid(PlayerController) == false)
+//	{
+//		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::Client_BindMappingContext IsValid(PlayerController) == false"));
+//		return;
+//	}
+//	UEnhancedInputLocalPlayerSubsystem* InputSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
+//	if (IsValid(InputSystem) == false)
+//	{
+//		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::Client_BindMappingContext IsValid(InputSystem) == false"));
+//		return;
+//	}
+//
+//	InputSystem->AddMappingContext(BubbleCharacter->GetDefaultInputMappingContext(), 0);*/
+//}
 
 void ABubbleCharacter::Client_UnbindMappingContext_Implementation()
 {
