@@ -105,9 +105,6 @@ public:
 	UFUNCTION(Client, Reliable)
 	void Client_BroadcastInitialValues();
 
-	UFUNCTION(Client, Reliable)
-	void Client_UnbindMappingContext();
-
 	UFUNCTION(NetMulticast, Reliable)
 	void NetMulticast_ShowEffectAtCharacterLocation(UNiagaraSystem* NiagaraEffect);
 

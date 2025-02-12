@@ -69,7 +69,13 @@ public:
 
 	void BindPawnMappingContext(ABubbleCharacter* BubblePawn);
 
+	UFUNCTION(Client, Reliable)
+	void Client_BindPawnMappingContext(ABubbleCharacter* BubblePawn);
+
 	void UnbindPawnMappingContext(ABubbleCharacter* BubblePawn);
+
+	UFUNCTION(Client, Reliable)
+	void Client_UnbindPawnMappingContext(ABubbleCharacter* BubblePawn);
 
 	UFUNCTION()
 	void OnSessionMessegeReceived(FText Messege);

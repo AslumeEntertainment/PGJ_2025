@@ -139,13 +139,17 @@ void APaintableItem::StopInteraction(bool GiveEnregy)
 	}
 
 	AHumanBubble* PlayerPawn = Cast<AHumanBubble>(InteractingPlayer->GetPawn());
-	if (IsValid(PlayerPawn))
+	if (IsValid(PlayerPawn) == false)
 	{
-		PlayerPawn->NetMulticast_StopAnimationMontage(PlayerPawn->CleanAnimation);
+		UE_LOG(LogTemp, Error, TEXT("APaintableItem::InteractRequest IsValid(PlayerPawn) == false"));
+		return;
 	}
 
-	InteractingPlayer->Client_SetInputMode(EInputMode::GameOnly);
+	PlayerPawn->NetMulticast_StopAnimationMontage(PlayerPawn->CleanAnimation);
+
+	InteractingPlayer->BindPawnMappingContext(PlayerPawn);
 	InteractingPlayer = nullptr;
+
 	GetWorldTimerManager().ClearTimer(CleaningPeriodTimer);
 	CleaningPeriodTimer.Invalidate();
 
@@ -161,14 +165,18 @@ void APaintableItem::InteractRequest(AController* InteractingCharacter)
 	}
 
 	InteractingPlayer = Cast<ABubbleController>(InteractingCharacter);
-	InteractingPlayer->Client_SetInputMode(EInputMode::UIOnly);
-	InteractingPlayer->StopMovement();
 
 	AHumanBubble* PlayerPawn = Cast<AHumanBubble>(InteractingCharacter->GetPawn());
-	if (IsValid(PlayerPawn))
+	if (IsValid(PlayerPawn) == false)
 	{
-		PlayerPawn->NetMulticast_PlayAnimationMontage(PlayerPawn->CleanAnimation);
+		UE_LOG(LogTemp, Error, TEXT("APaintableItem::InteractRequest IsValid(PlayerPawn) == false"));
+		return;
 	}
+
+	InteractingPlayer->UnbindPawnMappingContext(PlayerPawn);
+	InteractingPlayer->StopMovement();
+
+	PlayerPawn->NetMulticast_PlayAnimationMontage(PlayerPawn->CleanAnimation);
 
 	IsLocked = true;
 	UE_LOG(LogTemp, Warning, TEXT("Starting Clean - Cleanness: %d Step:%d"), Cleanness, Iterations);

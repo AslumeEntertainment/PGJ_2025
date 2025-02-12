@@ -57,7 +57,7 @@ void ASublevelExit::InteractRequest(AController* InteractingCharacter)
 		//pop
 	}
 
-	FlatBubble->Client_UnbindMappingContext();
+	PlayerCont->UnbindPawnMappingContext(FlatBubble);
 	PlayerCont->Possess(FlatBubble->HumanBubbleOwner);
 
 	FlatBubble->Destroy();

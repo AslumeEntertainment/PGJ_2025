@@ -109,10 +109,15 @@ void ABubbleController::BindPawnMappingContext(ABubbleCharacter* BubblePawn)
 	UEnhancedInputLocalPlayerSubsystem* InputSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
 	if (IsValid(InputSystem) == false)
 	{
-		UE_LOG(LogTemp, Error, TEXT("ABubbleController::BindPawnMappingContext IsValid(InputSystem) == false"));
+		Client_BindPawnMappingContext(BubblePawn);
 		return;
 	}
 	InputSystem->AddMappingContext(BubblePawn->GetDefaultInputMappingContext(), 0);
+}
+
+void ABubbleController::Client_BindPawnMappingContext_Implementation(ABubbleCharacter* BubblePawn)
+{
+	BindPawnMappingContext(BubblePawn);
 }
 
 void ABubbleController::UnbindPawnMappingContext(ABubbleCharacter* BubblePawn)
@@ -120,11 +125,16 @@ void ABubbleController::UnbindPawnMappingContext(ABubbleCharacter* BubblePawn)
 	UEnhancedInputLocalPlayerSubsystem* InputSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
 	if (IsValid(InputSystem) == false)
 	{
-		UE_LOG(LogTemp, Error, TEXT("ABubbleController::UnbindPawnMappingContext IsValid(InputSystem) == false"));
+		Client_UnbindPawnMappingContext(BubblePawn);
 		return;
 	}
 
 	InputSystem->RemoveMappingContext(BubblePawn->GetDefaultInputMappingContext());
+}
+
+void ABubbleController::Client_UnbindPawnMappingContext_Implementation(ABubbleCharacter* BubblePawn)
+{
+	UnbindPawnMappingContext(BubblePawn);
 }
 
 void ABubbleController::OnSessionMessegeReceived(FText Messege)//_Implementation(FText Messege)

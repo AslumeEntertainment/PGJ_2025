@@ -290,24 +290,6 @@ void ABubbleCharacter::Client_BroadcastInitialValues_Implementation()
 	BroadcastInitialValues();
 }
 
-void ABubbleCharacter::Client_UnbindMappingContext_Implementation()
-{
-	APlayerController* PlayerCont = Cast<APlayerController>(GetController());
-	if (IsValid(PlayerCont) == false)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::Client_UnbindMappingContext IsValid(PlayerCont) == false"));
-		return;
-	}
-	UEnhancedInputLocalPlayerSubsystem* InputSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerCont->GetLocalPlayer());
-	if (IsValid(InputSystem) == false)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::Client_UnbindMappingContext IsValid(InputSystem) == false"));
-		return;
-	}
-
-	InputSystem->RemoveMappingContext(DefaultMappingContext);
-}
-
 void ABubbleCharacter::NetMulticast_ShowEffectAtCharacterLocation_Implementation(UNiagaraSystem* NiagaraEffect)
 {
 	UWorld* World = GetWorld();

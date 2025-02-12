@@ -33,8 +33,8 @@ void ASublevelTransitioner::ContinueInteraction(ABubbleController* PlayerCont, A
 		UE_LOG(LogTemp, Error, TEXT("ASublevelTransitioner::InteractRequest IsValid(FlatBubble) == false"));
 		return;
 	}
-	PlayerPawn->SetIsArmless(true);
-	PlayerPawn->Client_UnbindMappingContext();
+	
+	PlayerCont->UnbindPawnMappingContext(PlayerPawn);
 	PlayerCont->Possess(FlatBubble);
 
 	PlayerCont->SetViewTargetWithBlend(SublevelCamera);
