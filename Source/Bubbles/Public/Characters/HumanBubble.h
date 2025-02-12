@@ -77,12 +77,17 @@ public:
 	UAnimMontage* CleanAnimation;
 
 	UPROPERTY(EditDefaultsOnly, Category = "CustomValues|Animation")
-	UAnimMontage* InteractAnimation;
+	UAnimMontage* SeparateArmAnimation;
+
+	UPROPERTY(EditDefaultsOnly, Category = "CustomValues|Animation")
+	UAnimMontage* NaturalRegrowAnimation;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UFUNCTION(BlueprintCallable)
 	void SetIsArmless(bool NewValue);
 
+	UFUNCTION(BlueprintCallable)
 	FORCEINLINE bool IsArmless() const { return bIsArmless; }
 
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }

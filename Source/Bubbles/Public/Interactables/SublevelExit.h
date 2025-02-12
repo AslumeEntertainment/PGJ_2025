@@ -17,6 +17,12 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "SublevelExitProperties")
 	bool bIsSafeExit = false;
 
+	UPROPERTY(EditAnywhere, Category = "SublevelExitProperties")
+	float ExitTime = 0.f;
+
+	UFUNCTION()
+	void ContinueInteraction();
+
 public:
 
 	virtual void InteractRequest(AController* InteractingCharacter) override;

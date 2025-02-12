@@ -14,6 +14,10 @@
 #include "BubbleController.h"
 #include "UI/HUD/InGameHUD.h"
 
+void ASublevelExit::ContinueInteraction()
+{
+}
+
 void ASublevelExit::InteractRequest(AController* InteractingCharacter)
 {
 	if (HasAuthority() == false)
@@ -46,8 +50,7 @@ void ASublevelExit::InteractRequest(AController* InteractingCharacter)
 		float CurrentEffectiveness = FlatBubble->GetAbilitySystemComponent()->GetNumericAttributeBase(UBubbleAttributeSet::GetEffectivenessAttribute());
 		FlatBubble->HumanBubbleOwner->GetAbilitySystemComponent()->SetNumericAttributeBase(UBubbleAttributeSet::GetEffectivenessAttribute(), CurrentEffectiveness);
 
-		FlatBubble->HumanBubbleOwner->SetIsArmless(false);
-		//restore arm
+		FlatBubble->HumanBubbleOwner->NetMulticast_PlayAnimationMontage(FlatBubble->HumanBubbleOwner->NaturalRegrowAnimation);
 	}
 	else
 	{

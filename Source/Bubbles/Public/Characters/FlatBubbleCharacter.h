@@ -7,6 +7,7 @@
 #include "FlatBubbleCharacter.generated.h"
 
 class UCapsuleComponent;
+class UNiagaraSystem;
 class AHumanBubble;
 
 UCLASS()
@@ -48,5 +49,8 @@ public:
 
 	UPROPERTY()
 	AHumanBubble* HumanBubbleOwner = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Visuals")
+	UNiagaraSystem* BubbleBurstEffect;
 
 };

@@ -14,29 +14,9 @@
 #include "BubbleController.h"
 #include "UI/HUD/InGameHUD.h"
 
-void ASublevelTransitioner::InteractRequest(AController* InteractingCharacter)
+
+void ASublevelTransitioner::ContinueInteraction(ABubbleController* PlayerCont, AHumanBubble* PlayerPawn)
 {
-	Super::InteractRequest(InteractingCharacter);
-
-	if (HasAuthority() == false)
-	{
-		return;
-	}
-
-	ABubbleController* PlayerCont = Cast<ABubbleController>(InteractingCharacter);
-	if (IsValid(PlayerCont) == false)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ASublevelTransitioner::InteractRequest IsValid(PlayerCont) == false"));
-		return;
-	}
-
-	AHumanBubble* PlayerPawn = Cast<AHumanBubble>(InteractingCharacter->GetPawn());
-	if(IsValid(PlayerPawn) == false)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ASublevelTransitioner::InteractRequest IsValid(PlayerPawn) == false"));
-		return;
-	}
-
 	UWorld* World = GetWorld();
 	if (IsValid(World) == false)
 	{
@@ -63,6 +43,39 @@ void ASublevelTransitioner::InteractRequest(AController* InteractingCharacter)
 	float CurrentEffectiveness = PlayerPawn->GetAbilitySystemComponent()->GetNumericAttributeBase(UBubbleAttributeSet::GetEffectivenessAttribute());
 	FlatBubble->GetAbilitySystemComponent()->SetNumericAttributeBase(UBubbleAttributeSet::GetEffectivenessAttribute(), CurrentEffectiveness);
 	FlatBubble->HumanBubbleOwner = PlayerPawn;
+}
+
+void ASublevelTransitioner::InteractRequest(AController* InteractingCharacter)
+{
+	Super::InteractRequest(InteractingCharacter);
+
+	if (HasAuthority() == false)
+	{
+		return;
+	}
+
+	ABubbleController* PlayerCont = Cast<ABubbleController>(InteractingCharacter);
+	if (IsValid(PlayerCont) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ASublevelTransitioner::InteractRequest IsValid(PlayerCont) == false"));
+		return;
+	}
+
+	AHumanBubble* PlayerPawn = Cast<AHumanBubble>(InteractingCharacter->GetPawn());
+	if(IsValid(PlayerPawn) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ASublevelTransitioner::InteractRequest IsValid(PlayerPawn) == false"));
+		return;
+	}
+
+	PlayerPawn->NetMulticast_PlayAnimationMontage(PlayerPawn->SeparateArmAnimation);
+
+	FTimerHandle ContinueInteractionTimer;
+	FTimerDelegate ContinueInteractionTimerDelegate;
+
+	ContinueInteractionTimerDelegate.BindUFunction(this, FName("ContinueInteraction"), PlayerCont, PlayerPawn);
+	GetWorldTimerManager().SetTimer(ContinueInteractionTimer, ContinueInteractionTimerDelegate, EntryTime, false);
+	
 }
 
 bool ASublevelTransitioner::bCanInteract(AController* InteractingCharacter)

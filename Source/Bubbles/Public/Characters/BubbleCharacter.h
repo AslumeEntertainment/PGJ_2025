@@ -28,7 +28,7 @@ class BUBBLES_API ABubbleCharacter : public ACharacter, public IAbilitySystemInt
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
+	
 	ABubbleCharacter();
 
 private:
@@ -104,9 +104,6 @@ public:
 
 	UFUNCTION(Client, Reliable)
 	void Client_BroadcastInitialValues();
-
-	/*UFUNCTION(Client, Reliable)
-	void Client_BindMappingContext();*/
 
 	UFUNCTION(Client, Reliable)
 	void Client_UnbindMappingContext();

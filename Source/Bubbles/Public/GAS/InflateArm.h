@@ -19,18 +19,10 @@ public:
 
 protected:
 
-	AHumanBubble* Player;
-
-	UPROPERTY(EditDefaultsOnly)
-	FGameplayTag ContinueAbilityTag;
-
 	UPROPERTY(EditDefaultsOnly)
 	UAnimMontage* AbilityAnimationMontage;
 
 	UFUNCTION()
 	void OnAnimMontageCompleted();
-
-	UFUNCTION()
-	void OnEventReceived(FGameplayEventData Payload);
 
 };

@@ -170,7 +170,6 @@ void APaintableItem::InteractRequest(AController* InteractingCharacter)
 		PlayerPawn->NetMulticast_PlayAnimationMontage(PlayerPawn->CleanAnimation);
 	}
 
-	//SetOwner(InteractingPlayer);
 	IsLocked = true;
 	UE_LOG(LogTemp, Warning, TEXT("Starting Clean - Cleanness: %d Step:%d"), Cleanness, Iterations);
 	
