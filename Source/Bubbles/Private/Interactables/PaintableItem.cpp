@@ -147,7 +147,7 @@ void APaintableItem::StopInteraction(bool GiveEnregy)
 
 	PlayerPawn->NetMulticast_StopAnimationMontage(PlayerPawn->CleanAnimation);
 
-	InteractingPlayer->BindPawnMappingContext(PlayerPawn);
+	InteractingPlayer->SetIsInputEnabled(true);
 	InteractingPlayer = nullptr;
 
 	GetWorldTimerManager().ClearTimer(CleaningPeriodTimer);
@@ -173,7 +173,7 @@ void APaintableItem::InteractRequest(AController* InteractingCharacter)
 		return;
 	}
 
-	InteractingPlayer->UnbindPawnMappingContext(PlayerPawn);
+	InteractingPlayer->SetIsInputEnabled(false);
 	InteractingPlayer->StopMovement();
 
 	PlayerPawn->NetMulticast_PlayAnimationMontage(PlayerPawn->CleanAnimation);

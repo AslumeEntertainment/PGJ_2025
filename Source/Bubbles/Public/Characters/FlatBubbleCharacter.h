@@ -30,6 +30,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* CrouchAction;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Visuals")
+	UNiagaraSystem* BubbleBurstEffect;
+
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual void Move(const FInputActionValue& Value) override;
@@ -50,7 +53,7 @@ public:
 	UPROPERTY()
 	AHumanBubble* HumanBubbleOwner = nullptr;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Visuals")
-	UNiagaraSystem* BubbleBurstEffect;
+	UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
+	void Pop(bool bShouldDestroy = false);
 
 };

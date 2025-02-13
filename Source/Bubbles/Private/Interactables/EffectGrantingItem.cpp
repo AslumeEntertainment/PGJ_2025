@@ -6,6 +6,7 @@
 #include "GameFramework/RotatingMovementComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
+#include "NiagaraFunctionLibrary.h"
 
 AEffectGrantingItem::AEffectGrantingItem()
 {
@@ -52,5 +53,23 @@ void AEffectGrantingItem::InteractRequest(AController* InteractingCharacter)
 
 	}
 
+	NetMulticast_OnCollected();
 	Destroy();
+}
+
+void AEffectGrantingItem::NetMulticast_OnCollected_Implementation()
+{
+	UWorld* World = GetWorld();
+	if (IsValid(World) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AFlatBubbleCharacter::Pop_Implementation IsValid(World) == false"));
+		return;
+	}
+	if (IsValid(OnCollectedEffect) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AFlatBubbleCharacter::Pop_Implementation IsValid(OnCollectedEffect) == false"));
+		return;
+	}
+
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, OnCollectedEffect, GetActorLocation(), GetActorRotation());
 }

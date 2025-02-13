@@ -21,7 +21,7 @@ protected:
 	float ExitTime = 0.f;
 
 	UFUNCTION()
-	void ContinueInteraction();
+	void ContinueInteraction(ABubbleController* PlayerCont, AFlatBubbleCharacter* FlatBubble);
 
 public:
 

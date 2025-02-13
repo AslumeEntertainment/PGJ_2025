@@ -6,9 +6,19 @@
 #include "Components/Button.h"
 
 
-void UTitleMenu::OnStartClicked()
+void UTitleMenu::OnHostClicked()
 {
-	StartClicked.Broadcast();
+	HostClicked.Broadcast();
+}
+
+void UTitleMenu::OnJoinClicked()
+{
+	JoinClicked.Broadcast();
+}
+
+void UTitleMenu::OnSettingsClicked()
+{
+	SettingsClicked.Broadcast();
 }
 
 void UTitleMenu::OnExitClicked()
@@ -19,6 +29,8 @@ void UTitleMenu::OnExitClicked()
 void UTitleMenu::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
-	BTN_Start->OnClicked.AddDynamic(this, &UTitleMenu::OnStartClicked);
+	BTN_Host->OnClicked.AddDynamic(this, &UTitleMenu::OnHostClicked);
+	BTN_Join->OnClicked.AddDynamic(this, &UTitleMenu::OnJoinClicked);
+	BTN_Settings->OnClicked.AddDynamic(this, &UTitleMenu::OnSettingsClicked);
 	BTN_Exit->OnClicked.AddDynamic(this, &UTitleMenu::OnExitClicked);
 }

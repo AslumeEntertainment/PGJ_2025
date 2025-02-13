@@ -14,8 +14,14 @@
 #include "BubbleController.h"
 #include "UI/HUD/InGameHUD.h"
 
-void ASublevelExit::ContinueInteraction()
+
+void ASublevelExit::ContinueInteraction(ABubbleController* PlayerCont, AFlatBubbleCharacter* FlatBubble)
 {
+	PlayerCont->SetIsInputEnabled(false);
+	PlayerCont->Possess(FlatBubble->HumanBubbleOwner);
+	PlayerCont->ClientSetRotation(FlatBubble->HumanBubbleOwner->GetActorRotation());
+
+	FlatBubble->Destroy();
 }
 
 void ASublevelExit::InteractRequest(AController* InteractingCharacter)
@@ -51,16 +57,20 @@ void ASublevelExit::InteractRequest(AController* InteractingCharacter)
 		FlatBubble->HumanBubbleOwner->GetAbilitySystemComponent()->SetNumericAttributeBase(UBubbleAttributeSet::GetEffectivenessAttribute(), CurrentEffectiveness);
 
 		FlatBubble->HumanBubbleOwner->NetMulticast_PlayAnimationMontage(FlatBubble->HumanBubbleOwner->NaturalRegrowAnimation);
-	}
-	else
-	{
-		//pop
-	}
 
-	PlayerCont->UnbindPawnMappingContext(FlatBubble);
-	PlayerCont->Possess(FlatBubble->HumanBubbleOwner);
+		ContinueInteraction(PlayerCont, FlatBubble);
+		return;
+	}
+	
+	FlatBubble->Pop();
 
-	FlatBubble->Destroy();
+	FTimerHandle ContinueInteractionTimer;
+	FTimerDelegate ContinueInteractionTimerDelegate;
+
+	ContinueInteractionTimerDelegate.BindUFunction(this, FName("ContinueInteraction"), PlayerCont, FlatBubble);
+	GetWorldTimerManager().SetTimer(ContinueInteractionTimer, ContinueInteractionTimerDelegate, ExitTime, false);
+
+	return;
 }
 
 bool ASublevelExit::bCanInteract(AController* InteractingCharacter)

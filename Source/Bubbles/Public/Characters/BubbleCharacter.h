@@ -111,6 +111,9 @@ public:
 	UFUNCTION()
 	void RotateTowardsActor(UWorld* World, AActor* TargetActor);
 
+	UFUNCTION()
+	void ActivateAbilityByTags(FGameplayTagContainer AbilityTagContainer);
+
 	UFUNCTION(NetMulticast, Reliable)
 	void NetMulticast_PlayAnimationMontage(UAnimMontage* Animation);
 

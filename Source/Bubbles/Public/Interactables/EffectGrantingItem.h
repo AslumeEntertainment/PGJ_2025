@@ -8,6 +8,7 @@
 #include "EffectGrantingItem.generated.h"
 
 class UGameplayEffect;
+class UNiagaraSystem;
 class URotatingMovementComponent;
 
 UCLASS()
@@ -25,10 +26,13 @@ private:
 
 protected:
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effects")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CustomValues|Effects")
 	TArray<TSubclassOf<UGameplayEffect>> Effects;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Idle")
+	UPROPERTY(EditDefaultsOnly, Category = "CustomValues|Visuals")
+	UNiagaraSystem* OnCollectedEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category = "CustomValues|Idle")
 	float RotationRate;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"), Category = "Idle")
@@ -41,6 +45,9 @@ protected:
 	virtual void InteractRequest(AController* InteractingCharacter) override;
 
 public:
+
+	UFUNCTION(NetMulticast, Reliable)
+	void NetMulticast_OnCollected();
 
 	TArray<TSubclassOf<UGameplayEffect>> GetEffects() { return Effects; }
 

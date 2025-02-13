@@ -34,7 +34,7 @@ void ASublevelTransitioner::ContinueInteraction(ABubbleController* PlayerCont, A
 		return;
 	}
 	
-	PlayerCont->UnbindPawnMappingContext(PlayerPawn);
+	PlayerCont->SetIsInputEnabled(false);
 	PlayerCont->Possess(FlatBubble);
 
 	PlayerCont->SetViewTargetWithBlend(SublevelCamera);
@@ -69,6 +69,7 @@ void ASublevelTransitioner::InteractRequest(AController* InteractingCharacter)
 	}
 
 	PlayerPawn->NetMulticast_PlayAnimationMontage(PlayerPawn->SeparateArmAnimation);
+	PlayerCont->SetIsInputEnabled(false);
 
 	FTimerHandle ContinueInteractionTimer;
 	FTimerDelegate ContinueInteractionTimerDelegate;

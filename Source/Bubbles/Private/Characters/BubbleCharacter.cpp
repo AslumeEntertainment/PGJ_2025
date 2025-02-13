@@ -95,7 +95,6 @@ bool ABubbleCharacter::CheckForInteractables(FHitResult HitResult)
 				Cast<UMeshComponent>(InteractableMeshComponent)->SetOverlayMaterial(nullptr);
 			}
 		}
-		//Server_SetFocusedInteractable(nullptr);
 		return false;
 	}
 
@@ -334,6 +333,11 @@ void ABubbleCharacter::RotateTowardsActor(UWorld* World, AActor* TargetActor)
 
 	RotateTimerDelegate.BindUFunction(this, FName("RotateTowardsActor"), World, TargetActor);
 	GetWorldTimerManager().SetTimer(RotateTimer, RotateTimerDelegate, 0.01f, false);
+}
+
+void ABubbleCharacter::ActivateAbilityByTags(FGameplayTagContainer AbilityTagContainer)
+{
+	AbilitySystemComponent->TryActivateAbilitiesByTag(AbilityTagContainer);
 }
 
 void ABubbleCharacter::NetMulticast_PlayAnimationMontage_Implementation(UAnimMontage* Animation)

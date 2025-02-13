@@ -48,6 +48,17 @@ protected:
 	UFUNCTION()
 	void OnRep_RemainingTime();
 
+	UFUNCTION(BlueprintCallable)
+	void BindPawnMappingContext(ABubbleCharacter* BubblePawn);
+
+	UFUNCTION(BlueprintCallable, Client, Reliable)
+	void Client_BindPawnMappingContext(ABubbleCharacter* BubblePawn);
+
+	UFUNCTION(BlueprintCallable)
+	void UnbindPawnMappingContext(ABubbleCharacter* BubblePawn);
+
+	UFUNCTION(BlueprintCallable, Client, Reliable)
+	void Client_UnbindPawnMappingContext(ABubbleCharacter* BubblePawn);
 
 public:
 
@@ -67,15 +78,8 @@ public:
 
 	void AcknowledgePossession(APawn* P) override;
 
-	void BindPawnMappingContext(ABubbleCharacter* BubblePawn);
-
-	UFUNCTION(Client, Reliable)
-	void Client_BindPawnMappingContext(ABubbleCharacter* BubblePawn);
-
-	void UnbindPawnMappingContext(ABubbleCharacter* BubblePawn);
-
-	UFUNCTION(Client, Reliable)
-	void Client_UnbindPawnMappingContext(ABubbleCharacter* BubblePawn);
+	UFUNCTION(BlueprintCallable)
+	void SetIsInputEnabled(bool NewValue);
 
 	UFUNCTION()
 	void OnSessionMessegeReceived(FText Messege);

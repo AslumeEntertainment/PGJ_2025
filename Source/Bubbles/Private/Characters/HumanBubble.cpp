@@ -7,6 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Controller.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
@@ -139,6 +140,52 @@ void AHumanBubble::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	{
 		UE_LOG(LogTemp, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+}
+
+void AHumanBubble::PointCameraTowardsActor(UWorld* World, AActor* TargetActor, APlayerController* PlayerController)
+{
+	if (IsValid(GetController()) == false)
+	{
+		return;
+	}
+	if (IsValid(World) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AHumanBubble::PointCameraTowardsActor IsValid(World) == false"));
+		return;
+	}
+	if (IsValid(TargetActor) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AHumanBubble::PointCameraTowardsActor IsValid(TargetActor) == false"));
+		return;
+	}
+	if (IsValid(PlayerController) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AHumanBubble::PointCameraTowardsActor IsValid(PlayerController) == false"));
+		return;
+	}
+
+	FVector NormalizedLocation = TargetActor->GetActorLocation() - FollowCamera->GetComponentLocation();
+	UKismetMathLibrary::Vector_Normalize(NormalizedLocation);
+
+	float DotProduct = FVector::DotProduct(NormalizedLocation, FollowCamera->GetForwardVector());
+
+	//GEngine->AddOnScreenDebugMessage(5, 5, FColor::Orange, FString::Printf(TEXT("DotProduct - %.3f"), DotProduct));
+	
+	if (FMath::Abs(DotProduct) >= 1.f)
+	{
+		return;
+	}
+
+	FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(FollowCamera->GetComponentLocation(), TargetActor->GetActorLocation());
+	FRotator InterpRotation = UKismetMathLibrary::RInterpTo(GetControlRotation(), LookAtRotation, World->DeltaTimeSeconds, 20);
+
+	PlayerController->SetControlRotation(InterpRotation);
+
+	FTimerHandle RotateTimer;
+	FTimerDelegate RotateTimerDelegate;
+
+	RotateTimerDelegate.BindUFunction(this, FName("PointCameraTowardsActor"), World, TargetActor, PlayerController);
+	GetWorldTimerManager().SetTimer(RotateTimer, RotateTimerDelegate, 0.01f, false);
 }
 
 void AHumanBubble::SetIsArmless(bool NewValue)

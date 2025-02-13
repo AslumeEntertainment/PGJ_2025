@@ -17,7 +17,6 @@ APaintableItemSpawner::APaintableItemSpawner()
 void APaintableItemSpawner::BeginPlay()
 {
 	Super::BeginPlay();
-
 }
 
 void APaintableItemSpawner::OnNetWorthChanged()
@@ -59,10 +58,11 @@ void APaintableItemSpawner::SpawnPaintableItems()
 		int RandIndex = i < MinimumSpawnedItems ? 0 : FMath::RandRange(0, SpawnableItems.Num() - 1);
 		int RandIndexLocation = FMath::RandRange(0, SpawnPoints.Num() - 1);
 		FVector RandLocation = SpawnPoints[RandIndexLocation];
+		FRotator RandRotation = FRotator(0, FMath::RandRange(0, 360), 0);
 		SpawnPoints.RemoveAt(RandIndexLocation);
 		if (SpawnableItems[RandIndex] == nullptr) continue;
 
-		APaintableItem* Item = World->SpawnActor<APaintableItem>(SpawnableItems[RandIndex], RandLocation, FRotator(0, 0, 0), Params);
+		APaintableItem* Item = World->SpawnActor<APaintableItem>(SpawnableItems[RandIndex], RandLocation, RandRotation, Params);
 		SpawnedItems.Add(Item);
 		Item->OnCleannessUpdated.AddDynamic(this, &APaintableItemSpawner::OnNetWorthChanged);
 		TotalNetWorth += Item->GetNetWorth();

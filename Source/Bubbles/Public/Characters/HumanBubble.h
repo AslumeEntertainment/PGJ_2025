@@ -22,12 +22,18 @@ class AHumanBubble : public ABubbleCharacter
 {
 	GENERATED_BODY()
 
+public:
+
+	AHumanBubble();
+
+protected:
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
@@ -42,12 +48,6 @@ class AHumanBubble : public ABubbleCharacter
 
 	UPROPERTY(EditDefaultsOnly, Category = "CustomValues|Ability")
 	FGameplayTagContainer InflateArmAbilityTags;
-
-public:
-
-	AHumanBubble();
-
-protected:
 
 	UPROPERTY(Replicated)
 	bool bIsArmless = false;
@@ -83,6 +83,9 @@ public:
 	UAnimMontage* NaturalRegrowAnimation;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	UFUNCTION()
+	void PointCameraTowardsActor(UWorld* World, AActor* TargetActor, APlayerController* PlayerController);
 
 	UFUNCTION(BlueprintCallable)
 	void SetIsArmless(bool NewValue);

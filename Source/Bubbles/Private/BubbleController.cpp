@@ -104,6 +104,18 @@ void ABubbleController::AcknowledgePossession(APawn* P)
 	}
 }
 
+void ABubbleController::SetIsInputEnabled(bool NewValue)
+{
+	ABubbleCharacter* BubblePawn = Cast<ABubbleCharacter>(GetPawn());
+	if (IsValid(BubblePawn) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleController::SetIsInputEnabled IsValid(BubblePawn) == false"));
+		return;
+	}
+
+	NewValue ? BindPawnMappingContext(BubblePawn) : UnbindPawnMappingContext(BubblePawn);
+}
+
 void ABubbleController::BindPawnMappingContext(ABubbleCharacter* BubblePawn)
 {
 	UEnhancedInputLocalPlayerSubsystem* InputSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
@@ -158,6 +170,9 @@ void ABubbleController::HideStartingWidget_Implementation()
 
 void ABubbleController::ShowEndingWidget_Implementation(int value)
 {
+	UnbindPawnMappingContext(Cast<ABubbleCharacter>(GetPawn()));
+	StopMovement();
+
 	if (value == 0)
 	{
 		OnGameEnd.Broadcast(FText::FromString("You Tied"));

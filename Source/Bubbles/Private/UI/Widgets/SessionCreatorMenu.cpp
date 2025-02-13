@@ -27,7 +27,8 @@ void USessionCreatorMenu::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	FString SessionName = "Session#" + FString::FromInt(FMath::RandRange(10000, 99999));
+	int SessionNum = FMath::RandRange(10000, 99999);
+	FString SessionName = (SessionNum == 42069) ? "TheAslume" : "Session#" + FString::FromInt(SessionNum);
 	ETXT_SessionName->SetText(FText::FromString(SessionName));
 }
 

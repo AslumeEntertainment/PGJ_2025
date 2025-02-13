@@ -8,6 +8,7 @@
 
 class UTitleMenu;
 class UHostJoinMenu;
+class USettingsMenu;
 class ULoadingScreen;
 class USessionCreatorMenu;
 class USessionSelectorMenu;
@@ -25,7 +26,7 @@ protected:
 	TSubclassOf<UTitleMenu> TitleMenuClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "WidgetClasses");
-	TSubclassOf<UHostJoinMenu> HostJoinMenuClass;
+	TSubclassOf<USettingsMenu> SettingsMenuClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "WidgetClasses");
 	TSubclassOf<ULoadingScreen> LoadingScreenClass;
@@ -40,7 +41,7 @@ protected:
 	UTitleMenu* TitleMenu;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	UHostJoinMenu* HostJoinMenu;
+	USettingsMenu* SettingsMenu;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	ULoadingScreen* LoadingScreen;
@@ -57,7 +58,7 @@ public:
 	void OpenTitleMenu();
 
 	UFUNCTION()
-	void OpenHostJoinMenu();
+	void OpenSettingsMenu();
 
 	UFUNCTION()
 	void ShowLoadingScreen(FText LoadingText = FText::FromString("Loading..."));

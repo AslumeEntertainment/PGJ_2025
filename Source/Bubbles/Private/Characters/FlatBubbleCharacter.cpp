@@ -6,6 +6,7 @@
 #include "Components/CapsuleComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "InputActionValue.h"
 
 AFlatBubbleCharacter::AFlatBubbleCharacter()
@@ -71,6 +72,8 @@ void AFlatBubbleCharacter::StopCrouch()
 
 void AFlatBubbleCharacter::OnInteractionCapsuleBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (GetActorScale3D() == FVector(0.001f)) return;
+
 	if (bShouldDrawDebug)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Flat bubble has overlaped"));
@@ -79,4 +82,29 @@ void AFlatBubbleCharacter::OnInteractionCapsuleBeginOverlap(UPrimitiveComponent*
 	{
 		TriggerInteraction();
 	}
+}
+
+void AFlatBubbleCharacter::Pop_Implementation(bool bShouldDestroy)
+{
+	UWorld* World = GetWorld();
+	if (IsValid(World) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AFlatBubbleCharacter::Pop_Implementation IsValid(World) == false"));
+		return;
+	}
+	if (IsValid(BubbleBurstEffect) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AFlatBubbleCharacter::Pop_Implementation IsValid(BubbleBurstEffect) == false"));
+		return;
+	}
+
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, BubbleBurstEffect, GetActorLocation(), GetActorRotation());
+
+	if (bShouldDestroy)
+	{
+		Destroy();
+		return;
+	}
+
+	SetActorScale3D(FVector(0.001f));
 }
