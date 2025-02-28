@@ -18,49 +18,49 @@ class ABubblesGameMode : public AGameModeBase
 
 public:
 
-	UPROPERTY(EditAnywhere)
-	int PlayersNeededForSession = 2;
-
-	UPROPERTY(VisibleAnywhere)
-	int CleanerTeam = 1;
-
-	UPROPERTY(VisibleAnywhere)
-	int ContaminateorTeam = -1;
-
 	UPROPERTY(VisibleAnywhere)
 	TMap<ABubbleController*, int> Players;
 
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<APaintableItemSpawner> ItemSpawnerClass;
+	UPROPERTY()
+	APaintableItemSpawner* Spawner;
 
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<AHumanBubble> CleanerClass;
-
-	UPROPERTY(EditAnywhere)
-	FVector CleanerLocation;
-
-	UPROPERTY(EditAnywhere)
-	FRotator CleanerRotation;
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<AHumanBubble> ContaminatorClass;
-
-	UPROPERTY(EditAnywhere)
-	FVector ContaminatorLocation;
-
-	UPROPERTY(EditAnywhere)
-	FRotator ContaminatorRotation;
+	UPROPERTY(EditAnywhere, Category = "GameDefaults")
+	int PlayersNeededForSession = 2;
 
 	FTimerHandle PrepearingPeriodTimer;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "GameDefaults")
 	float PrepearingPeriodLenght = 5;
 
 	FTimerHandle GamePeriodTimer;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "GameDefaults")
 	float GamePeriodLenght = 300;
 
-	UPROPERTY()
-	APaintableItemSpawner* Spawner;
+	UPROPERTY(EditAnywhere, Category = "GameDefaults")
+	TSubclassOf<APaintableItemSpawner> ItemSpawnerClass;
+
+	UPROPERTY(VisibleAnywhere, Category = "GameDefaults|Cleaner")
+	int CleanerTeam = 1;
+
+	UPROPERTY(EditAnywhere, Category = "GameDefaults|Cleaner")
+	TSubclassOf<AHumanBubble> CleanerClass;
+
+	UPROPERTY(EditAnywhere, Category = "GameDefaults|Cleaner")
+	FVector CleanerLocation;
+
+	UPROPERTY(EditAnywhere, Category = "GameDefaults|Cleaner")
+	FRotator CleanerRotation;
+
+	UPROPERTY(VisibleAnywhere, Category = "GameDefaults|Contaminator")
+	int ContaminateorTeam = -1;
+
+	UPROPERTY(EditAnywhere, Category = "GameDefaults|Contaminator")
+	TSubclassOf<AHumanBubble> ContaminatorClass;
+
+	UPROPERTY(EditAnywhere, Category = "GameDefaults|Contaminator")
+	FVector ContaminatorLocation;
+
+	UPROPERTY(EditAnywhere, Category = "GameDefaults|Contaminator")
+	FRotator ContaminatorRotation;
 
 	void CheckLobbyReadiness();
 
@@ -69,6 +69,8 @@ public:
 	void BeginPlay() override;
 
 	void PostLogin(APlayerController* NewPlayer) override;
+
+	void Logout(AController* Exiting) override;
 
 	UFUNCTION()
 	void PrepareGame();
@@ -81,6 +83,9 @@ public:
 
 	UFUNCTION()
 	void EndGame();
+
+	UFUNCTION()
+	void ResetGame();
 
 	UFUNCTION()
 	void OnCleanPoints(int points);

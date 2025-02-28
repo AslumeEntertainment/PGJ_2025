@@ -15,6 +15,7 @@ void USessionButtonWidget::OnSessionClicked()
 	}
 
 	SessionClicked.Broadcast(GetParent()->GetChildIndex(this));
+	SessionNameDelegate.Broadcast(FText::FromString("Joining " + TXT_SessionName->GetText().ToString()));
 	BTN_Session->SetIsEnabled(false);
 }
 

@@ -43,11 +43,15 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTextArrayTransferSignature, TArray<
 //------------------------------------------------------------------------------------------
 
 
-
-
 //--------------------------------------Engine Classes-------------------------------------
 UDELEGATE()
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerControllerTransferSignature, APlayerController*, TriggeringPlayer);
 
 //-----------------------------------------------------------------------------------------
 
+
+//--------------------------------------Sessions-------------------------------------------
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSimpleSessionDataTransferSignature, const FString&, SessionName, bool, bIsPublic);
+
+//-----------------------------------------------------------------------------------------

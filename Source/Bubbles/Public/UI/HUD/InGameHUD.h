@@ -11,14 +11,16 @@ class ULoadingScreen;
 class UInteractionWidget;
 class UGameOverWidget;
 
+class ABubbleController;
+class AHumanBubble;
+class AFlatBubbleCharacter;
+
 UCLASS()
 class BUBBLES_API AInGameHUD : public AHUD
 {
 	GENERATED_BODY()
 	
 protected:
-
-	virtual void BeginPlay() override;
 
 	UPROPERTY(EditDefaultsOnly, Category = "WidgetClasses");
 	TSubclassOf<UInteractionWidget> InteractionWidgetClass;
@@ -47,7 +49,13 @@ protected:
 public:
 
 	UFUNCTION()
-	void BindPlayerDelegatesToUI();
+	void BindControllerDelegatesToUI(ABubbleController* Controller);
+
+	UFUNCTION()
+	void BindPawnDelegatesToUI(AHumanBubble* Pawn);
+
+	UFUNCTION()
+	void Bind2DPawnDelegatesToUI(AFlatBubbleCharacter* Pawn);
 
 	UFUNCTION()
 	void ShowInGameOverlay();

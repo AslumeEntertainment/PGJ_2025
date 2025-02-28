@@ -6,6 +6,7 @@
 #include "Components/StaticMeshComponent.h"
 
 #include "Characters/HumanBubble.h"
+#include "BubbleController.h"
 
 // Sets default values
 AItemBase::AItemBase()
@@ -22,12 +23,19 @@ AItemBase::AItemBase()
 
 void AItemBase::InteractRequest(AController* InteractingCharacter)
 {
+	ABubbleController* BubbleController = Cast<ABubbleController>(InteractingCharacter);
+	if (IsValid(BubbleController) == false) 
+	{
+		UE_LOG(LogTemp, Error, TEXT("AItemBase::InteractRequest IsValid(BubbleController) == false"));
+		return;
+	}
+
 	AHumanBubble* PlayerPawn = Cast<AHumanBubble>(InteractingCharacter->GetPawn());
 	if (IsValid(PlayerPawn))
 	{
 		PlayerPawn->RotateTowardsActor(GetWorld(), this);
+		PlayerPawn->PointCameraTowardsActor(GetWorld(), this, BubbleController);
 	}
-	UE_LOG(LogTemp, Display, TEXT("Interacted with: %s"), *ItemName.ToString());
 }
 
 bool AItemBase::bCanInteract(AController* InteractingCharacter)

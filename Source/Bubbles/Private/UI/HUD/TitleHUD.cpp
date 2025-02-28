@@ -8,7 +8,9 @@
 
 #include "UI/Widgets/SessionSelectorMenu.h"
 #include "UI/Widgets/SessionButtonWidget.h"
+#include "UI/Widgets/SessionCreatorMenu.h"
 #include "UI/Widgets/LoadingScreen.h"
+#include "UI/Widgets/SettingsMenu.h"
 #include "UI/Widgets/HostJoinMenu.h"
 #include "UI/Widgets/TitleMenu.h"
 #include "GameModes/TitleGameMode.h"
@@ -38,19 +40,26 @@ void ATitleHUD::BeginPlay()
 		PlayerOwner->bShowMouseCursor = true;
 	}
 
-	TitleMenu = CreateWidget<UTitleMenu>(UGameplayStatics::GetGameInstance(World), TitleMenuClass);
-	HostJoinMenu = CreateWidget<UHostJoinMenu>(UGameplayStatics::GetGameInstance(World), HostJoinMenuClass);
-	LoadingScreen = CreateWidget<ULoadingScreen>(UGameplayStatics::GetGameInstance(World), LoadingScreenClass);
-	SessionSelectorMenu = CreateWidget<USessionSelectorMenu>(UGameplayStatics::GetGameInstance(World), SessionSelectorMenuClass);
+	TitleMenu = CreateWidget<UTitleMenu>(PlayerOwner, TitleMenuClass);
+	SettingsMenu = CreateWidget<USettingsMenu>(PlayerOwner, SettingsMenuClass);
+	LoadingScreen = CreateWidget<ULoadingScreen>(PlayerOwner, LoadingScreenClass);
+	SessionCreatorMenu = CreateWidget<USessionCreatorMenu>(PlayerOwner, SessionCreatorMenuClass);
+	SessionSelectorMenu = CreateWidget<USessionSelectorMenu>(PlayerOwner, SessionSelectorMenuClass);
 
-	TitleMenu->StartClicked.AddDynamic(this, &ATitleHUD::OpenHostJoinMenu);
+	TitleMenu->HostClicked.AddDynamic(this, &ATitleHUD::OpenSessionCreatorMenu);
+	TitleMenu->JoinClicked.AddDynamic(this, &ATitleHUD::ShowSessionSelectorMenu);
+	TitleMenu->SettingsClicked.AddDynamic(this, &ATitleHUD::OpenSettingsMenu);
 	TitleMenu->ExitClicked.AddDynamic(GameMode, &ATitleGameMode::ExitGame);
 
-	HostJoinMenu->HostClicked.AddDynamic(GameMode, &ATitleGameMode::HostSession);
-	HostJoinMenu->JoinClicked.AddDynamic(this, &ATitleHUD::ShowSessionSelectorMenu);
-	HostJoinMenu->BackClicked.AddDynamic(this, &ATitleHUD::OpenTitleMenu);
+	SettingsMenu->SetCurrentGraphicsQualitySelected(GameMode->GetScalability());
+	SettingsMenu->GraphicsUpdated.AddDynamic(GameMode, &ATitleGameMode::SetScalability);
+	SettingsMenu->BackClicked.AddDynamic(this, &ATitleHUD::OpenTitleMenu);
 
-	SessionSelectorMenu->BackClicked.AddDynamic(this, &ATitleHUD::OpenHostJoinMenu);
+	SessionCreatorMenu->BackClicked.AddDynamic(this, &ATitleHUD::OpenTitleMenu);
+	SessionCreatorMenu->StartClicked.AddDynamic(GameMode, &ATitleGameMode::HostSession);
+
+	SessionSelectorMenu->BackClicked.AddDynamic(this, &ATitleHUD::OpenTitleMenu);
+	SessionSelectorMenu->RefreshClicked.AddDynamic(this, &ATitleHUD::ShowSessionSelectorMenu);
 
 	GameMode->OnSessionsFound.AddDynamic(this, &ATitleHUD::FillSessions);
 
@@ -70,17 +79,17 @@ void ATitleHUD::OpenTitleMenu()
 	TitleMenu->AddToViewport();
 }
 
-void ATitleHUD::OpenHostJoinMenu()
+void ATitleHUD::OpenSettingsMenu()
 {
 	ClearScreen();
 
-	if (IsValid(HostJoinMenu) == false)
+	if (IsValid(SettingsMenu) == false)
 	{
-		UE_LOG(LogTemp, Error, TEXT("ATitleHUD::OpenHostJoinMenu IsValid(HostJoinMenu) == false"));
+		UE_LOG(LogTemp, Error, TEXT("ATitleHUD::OpenHostJoinMenu IsValid(SettingsMenu) == false"));
 		return;
 	}
 
-	HostJoinMenu->AddToViewport();
+	SettingsMenu->AddToViewport();
 }
 
 void ATitleHUD::ShowLoadingScreen(FText LoadingText)
@@ -103,6 +112,19 @@ void ATitleHUD::RemoveLoadingScreen()
 	}
 }
 
+void ATitleHUD::OpenSessionCreatorMenu()
+{
+	ClearScreen();
+
+	if (IsValid(SessionCreatorMenu) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ATitleHUD::OpenSessionCreatorMenu IsValid(SessionCreatorMenu) == false"));
+		return;
+	}
+
+	SessionCreatorMenu->AddToViewport();
+}
+
 void ATitleHUD::ShowSessionSelectorMenu()
 {
 	UWorld* World = GetWorld();
@@ -118,16 +140,19 @@ void ATitleHUD::ShowSessionSelectorMenu()
 		UE_LOG(LogTemp, Error, TEXT("ATitleHUD::ShowSessionSelectorMenu IsValid(GameMode) == false"));
 		return;
 	}
-
-	ClearScreen();
-	ShowLoadingScreen();
-
 	if (IsValid(SessionSelectorMenu) == false)
 	{
 		UE_LOG(LogTemp, Error, TEXT("ATitleHUD::ShowSessionSelectorMenu IsValid(SessionSelectorMenu) == false"));
 		return;
 	}
 
+	if (SessionSelectorMenu->IsInViewport() == false)
+	{
+		ClearScreen();
+	}
+	
+	ShowLoadingScreen(FText::FromString("Looking for sessions..."));
+	SessionSelectorMenu->ClearSessions();
 	SessionSelectorMenu->AddToViewport();
 	GameMode->FindSessions();
 }
@@ -158,6 +183,7 @@ void ATitleHUD::FillSessions(TArray<FText> SessionNames)
 		if (IsValid(SessionButton))
 		{
 			SessionButton->SessionClicked.AddDynamic(GameMode, &ATitleGameMode::JoinSession);
+			SessionButton->SessionNameDelegate.AddDynamic(this, &ATitleHUD::ShowLoadingScreen);
 		}
 	}
 }

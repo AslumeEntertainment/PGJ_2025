@@ -4,18 +4,27 @@
 #include "BubbleController.h"
 
 #include "Headers/GeneralDelegates.h"
+#include "EnhancedInputSubsystems.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
 #include "Characters/HumanBubble.h"
-#include "UI/HUD/InGameHUD.h"	
+#include "Characters/FlatBubbleCharacter.h"
+#include "UI/HUD/InGameHUD.h"
 
 void ABubbleController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME_CONDITION_NOTIFY(ABubbleController, CleanerPoints, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(ABubbleController, ContaminatorPoints, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(ABubbleController, GameProgress, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(ABubbleController, RemainingTime, COND_None, REPNOTIFY_Always);
+
 	DOREPLIFETIME_CONDITION_NOTIFY(ABubbleController, IsInputLocked, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(ABubbleController, Team, COND_None, REPNOTIFY_Always);
 }
+
 void ABubbleController::Client_SetInputMode_Implementation(EInputMode  InputMode)
 {
 	switch (InputMode)
@@ -25,10 +34,119 @@ void ABubbleController::Client_SetInputMode_Implementation(EInputMode  InputMode
 		case EInputMode::UIOnly: SetInputMode(FInputModeUIOnly()); IsInputLocked = true; break;
 	}
 }
+
+void ABubbleController::Client_SetupUIBindings_Implementation()
+{
+	AInGameHUD* InGameHUD = Cast<AInGameHUD>(GetHUD());
+	if (IsValid(InGameHUD) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleController::Client_SetupUIBindings_Implementation IsValid(InGameHUD) == false"))
+		return;
+	}
+	InGameHUD->BindControllerDelegatesToUI(this);
+}
+
+void ABubbleController::OnRep_CleannerPoints()
+{
+	OnCleanerPointUpdate.Broadcast(CleanerPoints);
+}
+
+void ABubbleController::OnRep_ContaminatorPoints()
+{
+	OnContaminatorPointUpdate.Broadcast(ContaminatorPoints);
+}
+
+void ABubbleController::OnRep_GameProgress()
+{
+	OnProgressUpdate.Broadcast(GameProgress);
+}
+
+void ABubbleController::OnRep_RemainingTime()
+{
+	OnCooldownUpdate.Broadcast(RemainingTime);
+}
+
 void ABubbleController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 	Client_SetInputMode(EInputMode::GameOnly);
+}
+
+void ABubbleController::AcknowledgePossession(APawn* P)
+{
+	Super::AcknowledgePossession(P);
+
+	AInGameHUD* InGameHUD = GetHUD<AInGameHUD>();
+	if (IsValid(InGameHUD) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleController::AcknowledgePossession IsValid(InGameHUD) == false"));
+		return;
+	}
+
+	ABubbleCharacter* BubblePawn = Cast<ABubbleCharacter>(P);
+	if (IsValid(BubblePawn) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleController::AcknowledgePossession IsValid(BubblePawn) == false"));
+		return;
+	}
+	
+	BindPawnMappingContext(BubblePawn);
+
+	if (IsValid(Cast<AHumanBubble>(BubblePawn)))
+	{
+		InGameHUD->BindPawnDelegatesToUI(Cast<AHumanBubble>(BubblePawn));
+		InGameHUD->ShowInteractionWidget();
+	}
+	else if (IsValid(Cast<AFlatBubbleCharacter>(BubblePawn)))
+	{
+		InGameHUD->Bind2DPawnDelegatesToUI(Cast<AFlatBubbleCharacter>(BubblePawn));
+		InGameHUD->HideInteractionWidget();
+	}
+}
+
+void ABubbleController::SetIsInputEnabled(bool NewValue)
+{
+	ABubbleCharacter* BubblePawn = Cast<ABubbleCharacter>(GetPawn());
+	if (IsValid(BubblePawn) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleController::SetIsInputEnabled IsValid(BubblePawn) == false"));
+		return;
+	}
+
+	NewValue ? BindPawnMappingContext(BubblePawn) : UnbindPawnMappingContext(BubblePawn);
+}
+
+void ABubbleController::BindPawnMappingContext(ABubbleCharacter* BubblePawn)
+{
+	UEnhancedInputLocalPlayerSubsystem* InputSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
+	if (IsValid(InputSystem) == false)
+	{
+		Client_BindPawnMappingContext(BubblePawn);
+		return;
+	}
+	InputSystem->AddMappingContext(BubblePawn->GetDefaultInputMappingContext(), 0);
+}
+
+void ABubbleController::Client_BindPawnMappingContext_Implementation(ABubbleCharacter* BubblePawn)
+{
+	BindPawnMappingContext(BubblePawn);
+}
+
+void ABubbleController::UnbindPawnMappingContext(ABubbleCharacter* BubblePawn)
+{
+	UEnhancedInputLocalPlayerSubsystem* InputSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
+	if (IsValid(InputSystem) == false)
+	{
+		Client_UnbindPawnMappingContext(BubblePawn);
+		return;
+	}
+
+	InputSystem->RemoveMappingContext(BubblePawn->GetDefaultInputMappingContext());
+}
+
+void ABubbleController::Client_UnbindPawnMappingContext_Implementation(ABubbleCharacter* BubblePawn)
+{
+	UnbindPawnMappingContext(BubblePawn);
 }
 
 void ABubbleController::OnSessionMessegeReceived(FText Messege)//_Implementation(FText Messege)
@@ -37,25 +155,24 @@ void ABubbleController::OnSessionMessegeReceived(FText Messege)//_Implementation
 	//OnLobbyMessegeChanged.Broadcast(Messege);
 }
 
-void ABubbleController::UpdateRemainingTime_Implementation(int value)
+void ABubbleController::UpdateRemainingTime(int value)
 {
 	//UE_LOG(LogTemp, Error, TEXT("%s: Remaining Time %d"), *GetName(), value);
-	OnCooldownUpdate.Broadcast(value);
+	RemainingTime = value;
+	OnCooldownUpdate.Broadcast(RemainingTime);
 }
 
 void ABubbleController::HideStartingWidget_Implementation()
 {
-	if (OnGameStart.IsBound())
-	{
-		OnGameStart.Broadcast();
-	}
-	else UE_LOG(LogTemp, Error, TEXT("%s: ABubbleController::HideStartingWidget OnGameStart is not bound!!!"), *GetName());
-	
-	UE_LOG(LogTemp, Warning, TEXT("%s: ABubbleController::HideStartingWidget"), *GetName());
+	OnGameStarted.Broadcast();
+	//UE_LOG(LogTemp, Warning, TEXT("%s: ABubbleController::HideStartingWidget"), *GetName());
 }
 
 void ABubbleController::ShowEndingWidget_Implementation(int value)
 {
+	UnbindPawnMappingContext(Cast<ABubbleCharacter>(GetPawn()));
+	StopMovement();
+
 	if (value == 0)
 	{
 		OnGameEnd.Broadcast(FText::FromString("You Tied"));
@@ -70,15 +187,30 @@ void ABubbleController::ShowEndingWidget_Implementation(int value)
 
 void ABubbleController::OnCleanPoints(int points)
 {
-	OnCleanerPointUpdate.Broadcast(points);
+	CleanerPoints = points;
+	OnCleanerPointUpdate.Broadcast(CleanerPoints);
 }
 
 void ABubbleController::OnContaminPoints(int points)
 {
-	OnContaminatorPointUpdate.Broadcast(points);
+	ContaminatorPoints = points;
+	OnContaminatorPointUpdate.Broadcast(ContaminatorPoints);
 }
 
 void ABubbleController::OnProgress(float progress)
 {
-	OnProgressUpdate.Broadcast(progress);
+	GameProgress = progress;
+	OnProgressUpdate.Broadcast(GameProgress);
+}
+
+void ABubbleController::LeaveGame()
+{
+	UWorld* World = GetWorld();
+	if (IsValid(World) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleController::LeaveGame IsValid(World) == false"));
+		return;
+	}
+
+	UGameplayStatics::OpenLevel(World, "TitleLevel");
 }

@@ -33,4 +33,5 @@ public:
 	void SetSessionName(FText SessionName);
 
 	FIntegerTransferSignature SessionClicked;
+	FTextTransferSignature SessionNameDelegate;
 };

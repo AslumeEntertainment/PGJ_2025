@@ -7,6 +7,7 @@
 #include "FlatBubbleCharacter.generated.h"
 
 class UCapsuleComponent;
+class UNiagaraSystem;
 class AHumanBubble;
 
 UCLASS()
@@ -29,6 +30,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* CrouchAction;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Visuals")
+	UNiagaraSystem* BubbleBurstEffect;
+
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual void Move(const FInputActionValue& Value) override;
@@ -49,7 +53,7 @@ public:
 	UPROPERTY()
 	AHumanBubble* HumanBubbleOwner = nullptr;
 
-	UFUNCTION(NetMulticast, Reliable)
-	void NetMulticast_SetFlatBubbleMaterial(UMaterialInterface* FlatBubbleMaterial);
+	UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
+	void Pop(bool bShouldDestroy = false);
 
 };

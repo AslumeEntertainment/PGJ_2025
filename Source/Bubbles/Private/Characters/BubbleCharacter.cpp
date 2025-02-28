@@ -42,6 +42,16 @@ void ABubbleCharacter::Server_SetFocusedInteractable_Implementation(UObject* InF
 	SetFocusedInteractable(InFocusedInteractable);
 }
 
+void ABubbleCharacter::Client_OnEffectivenessUpdated_Implementation(float CurrentEffectiveness, float MaxEffectiveness)
+{
+	OnEffectivenessUpdated.Broadcast(CurrentEffectiveness / MaxEffectiveness);
+}
+
+void ABubbleCharacter::Client_OnEnergyUpdated_Implementation(float CurrentEnergy, float MaxEnergy)
+{
+	OnEnergyUpdated.Broadcast(CurrentEnergy / MaxEnergy);
+}
+
 void ABubbleCharacter::SetFocusedInteractable(UObject* InFocusedInteractable)
 {
 	if (HasAuthority() == false)
@@ -65,28 +75,48 @@ bool ABubbleCharacter::CheckForInteractables(FHitResult HitResult)
 		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::CheckForInteractables IsValid(PC) == false"));
 		return false;
 	}
+
+	AActor* HitActor = HitResult.GetActor();
+	UPrimitiveComponent* HitComponent = HitResult.GetComponent();
+	IInteractable* InteractableActor = Cast<IInteractable>(HitActor);
+
 	if (PC->IsInputLocked)
 	{
 		if (FocusedInteractableObject != nullptr)
 		{
+			if (FocusedInteractableObject == HitActor && InteractableActor != nullptr)
+			{
+				UpdateInteractionText(InteractableActor->GetInteractableName(), InteractableActor->bCanInteract(GetController()));
+			}
+
 			UActorComponent* InteractableMeshComponent = Cast<AActor>(FocusedInteractableObject)->GetComponentByClass(UMeshComponent::StaticClass());
 			if (Cast<UMeshComponent>(InteractableMeshComponent))
 			{
 				Cast<UMeshComponent>(InteractableMeshComponent)->SetOverlayMaterial(nullptr);
 			}
 		}
-		Server_SetFocusedInteractable(nullptr);
 		return false;
 	}
 
-	AActor* HitActor = HitResult.GetActor();
-	UPrimitiveComponent* HitComponent = HitResult.GetComponent();
-	IInteractable* InteractableActor = Cast<IInteractable>(HitActor);
-
 	if (FocusedInteractableObject == HitActor)
 	{
+		if (InteractableActor == nullptr)
+		{
+			return false;
+		}
+
+		UpdateInteractionText(InteractableActor->GetInteractableName(), InteractableActor->bCanInteract(GetController()));
+
+		UActorComponent* InteractableMeshComponent = Cast<AActor>(FocusedInteractableObject)->GetComponentByClass(UMeshComponent::StaticClass());
+		if (Cast<UMeshComponent>(InteractableMeshComponent))
+		{
+			Cast<UMeshComponent>(InteractableMeshComponent)->SetOverlayMaterial(
+				InteractableActor->bCanInteract(GetController()) ? InteractableOverlayMaterial : nullptr);
+		}
+
 		return true;
 	}
+
 	if (InteractableActor == nullptr)
 	{
 		if (FocusedInteractableObject == nullptr)
@@ -132,10 +162,29 @@ bool ABubbleCharacter::CheckForInteractables(FHitResult HitResult)
 
 void ABubbleCharacter::TriggerInteraction()
 {
-	UE_LOG(LogTemp, Warning, TEXT("%s: Interact"), *GetName());
+	AbilitySystemComponent->TryActivateAbilitiesByTag(InteractionAbilityTags);
+}
 
-	FGameplayEventData Data = FGameplayEventData();
-	AbilitySystemComponent->HandleGameplayEvent(InteractionAbilityTag, &Data);
+void ABubbleCharacter::BindCallbacksToDependencies()
+{
+	if (IsValid(AbilitySystemComponent) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::BindCallbacksToDependencies IsValid(AbilitySystemComponent) == false"));
+		return;
+	}
+	if (IsValid(AttributeSet) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::BindCallbacksToDependencies IsValid(AttributeSet) == false"));
+		return;
+	}
+
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetEffectivenessAttribute()).AddLambda
+	(
+		[this](const FOnAttributeChangeData& Data)
+		{
+			Client_OnEffectivenessUpdated(Data.NewValue, AttributeSet->GetMaxEffectiveness());
+		}
+	);
 }
 
 void ABubbleCharacter::UpdateInteractionText(FText InteractableName, bool bCanInteract)
@@ -190,6 +239,8 @@ void ABubbleCharacter::InitCharacterDefaults()
 	{
 		GEHandle = AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
 	}
+	
+	BindCallbacksToDependencies();
 
 	bHasBeenInited = true;
 }
@@ -197,8 +248,6 @@ void ABubbleCharacter::InitCharacterDefaults()
 void ABubbleCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
-
-	Client_BindMappingContext();
 
 	InitCharacterDefaults();
 }
@@ -217,40 +266,27 @@ void ABubbleCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	}
 }
 
-void ABubbleCharacter::Client_BindMappingContext_Implementation()
+void ABubbleCharacter::BroadcastInitialValues()
 {
-	APlayerController* PlayerController = Cast<APlayerController>(GetController());
-	if (IsValid(PlayerController) == false)
+	if (HasAuthority() == false)
 	{
-		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::Client_BindMappingContext IsValid(PlayerController) == false"));
-		return;
+		FTimerHandle BroadcastInitialValuesTimerHandle;
+		GetWorldTimerManager().SetTimer(BroadcastInitialValuesTimerHandle, this, &ABubbleCharacter::Client_BroadcastInitialValues, 0.5f, false);
 	}
-	UEnhancedInputLocalPlayerSubsystem* InputSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
-	if (IsValid(InputSystem) == false)
+
+	if (IsValid(AttributeSet) == false)
 	{
-		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::Client_BindMappingContext IsValid(InputSystem) == false"));
+		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::BroadcastInitialValues IsValid(AttributeSet) == false"));
 		return;
 	}
 
-	InputSystem->AddMappingContext(DefaultMappingContext, 0);
+	Client_OnEffectivenessUpdated(AttributeSet->GetEffectiveness(), AttributeSet->GetMaxEffectiveness());
+	Client_OnEnergyUpdated(AttributeSet->GetEnergy(), AttributeSet->GetMaxEnergy());
 }
 
-void ABubbleCharacter::Client_UnbindMappingContext_Implementation()
+void ABubbleCharacter::Client_BroadcastInitialValues_Implementation()
 {
-	APlayerController* PlayerCont = Cast<APlayerController>(GetController());
-	if (IsValid(PlayerCont) == false)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::Client_UnbindMappingContext IsValid(PlayerCont) == false"));
-		return;
-	}
-	UEnhancedInputLocalPlayerSubsystem* InputSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerCont->GetLocalPlayer());
-	if (IsValid(InputSystem) == false)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ABubbleCharacter::Client_UnbindMappingContext IsValid(InputSystem) == false"));
-		return;
-	}
-
-	InputSystem->RemoveMappingContext(DefaultMappingContext);
+	BroadcastInitialValues();
 }
 
 void ABubbleCharacter::NetMulticast_ShowEffectAtCharacterLocation_Implementation(UNiagaraSystem* NiagaraEffect)
@@ -297,6 +333,11 @@ void ABubbleCharacter::RotateTowardsActor(UWorld* World, AActor* TargetActor)
 
 	RotateTimerDelegate.BindUFunction(this, FName("RotateTowardsActor"), World, TargetActor);
 	GetWorldTimerManager().SetTimer(RotateTimer, RotateTimerDelegate, 0.01f, false);
+}
+
+void ABubbleCharacter::ActivateAbilityByTags(FGameplayTagContainer AbilityTagContainer)
+{
+	AbilitySystemComponent->TryActivateAbilitiesByTag(AbilityTagContainer);
 }
 
 void ABubbleCharacter::NetMulticast_PlayAnimationMontage_Implementation(UAnimMontage* Animation)

@@ -17,13 +17,25 @@ class BUBBLES_API UTitleMenu : public UUserWidget
 protected:
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	UButton* BTN_Start;
+	UButton* BTN_Host;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UButton* BTN_Join;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UButton* BTN_Settings;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* BTN_Exit;
 
 	UFUNCTION()
-	void OnStartClicked();
+	void OnHostClicked();
+
+	UFUNCTION()
+	void OnJoinClicked();
+
+	UFUNCTION()
+	void OnSettingsClicked();
 
 	UFUNCTION()
 	void OnExitClicked();
@@ -32,6 +44,8 @@ public:
 
 	virtual void NativeOnInitialized() override;
 
-	FVoidDataTransferSignature StartClicked;
+	FVoidDataTransferSignature HostClicked;
+	FVoidDataTransferSignature JoinClicked;
+	FVoidDataTransferSignature SettingsClicked;
 	FVoidDataTransferSignature ExitClicked;
 };

@@ -28,7 +28,7 @@ class BUBBLES_API ABubbleCharacter : public ACharacter, public IAbilitySystemInt
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
+	
 	ABubbleCharacter();
 
 private:
@@ -47,7 +47,7 @@ protected:
 	float InteractionRange = 100;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Interaction")
-	FGameplayTag InteractionAbilityTag;
+	FGameplayTagContainer InteractionAbilityTags;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Debug")
 	bool bShouldDrawDebug = true;
@@ -64,12 +64,17 @@ protected:
 	UPROPERTY(Transient)
 	UBubbleAttributeSet* AttributeSet;
 
-	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* MoveAction;
+
+	UFUNCTION(BlueprintCallable, Client, Reliable)
+	void Client_OnEffectivenessUpdated(float CurrentEffectiveness, float MaxEffectiveness);
+
+	UFUNCTION(BlueprintCallable, Client, Reliable)
+	void Client_OnEnergyUpdated(float CurrentEnergy, float MaxEnergy);
 
 	UFUNCTION(Server, Reliable)
 	void Server_SetFocusedInteractable(UObject* InFocusedInteractable);
@@ -80,10 +85,13 @@ protected:
 
 	bool CheckForInteractables(FHitResult HitResult);
 
-	void TriggerInteraction();
+	virtual void TriggerInteraction();
+
+	virtual void BindCallbacksToDependencies();
 
 public:
 
+	UFUNCTION()
 	void UpdateInteractionText(FText InteractableName, bool bCanInteract);
 
 	void InitCharacterDefaults();
@@ -92,17 +100,19 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	UFUNCTION(Client, Reliable)
-	void Client_BindMappingContext();
+	void BroadcastInitialValues();
 
 	UFUNCTION(Client, Reliable)
-	void Client_UnbindMappingContext();
+	void Client_BroadcastInitialValues();
 
 	UFUNCTION(NetMulticast, Reliable)
 	void NetMulticast_ShowEffectAtCharacterLocation(UNiagaraSystem* NiagaraEffect);
 
 	UFUNCTION()
 	void RotateTowardsActor(UWorld* World, AActor* TargetActor);
+
+	UFUNCTION()
+	void ActivateAbilityByTags(FGameplayTagContainer AbilityTagContainer);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void NetMulticast_PlayAnimationMontage(UAnimMontage* Animation);
@@ -117,6 +127,10 @@ public:
 
 	UObject* GetFocusedInteractableObject() { return FocusedInteractableObject; }
 
+	UInputMappingContext* GetDefaultInputMappingContext() { return DefaultMappingContext; }
+
 	UPROPERTY(BlueprintAssignable)
 	FTextTransferSignature InteractIndicationTextDelegate;
+	FFloatTransferSignature OnEffectivenessUpdated;
+	FFloatTransferSignature OnEnergyUpdated;
 };

@@ -15,36 +15,12 @@ class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
 
+class AFlatBubbleCharacter;
+
 UCLASS(config=Game)
 class AHumanBubble : public ABubbleCharacter
 {
 	GENERATED_BODY()
-
-	bool bAreAttributesBoundToUI = false;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	USpringArmComponent* CameraBoom;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* FollowCamera;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* LookAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* InteractAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* AbilityAction;
-
-	UPROPERTY(EditDefaultsOnly, Category = "CustomValues|Ability")
-	FGameplayTagContainer AbilityTag;
-
-	UFUNCTION(BlueprintCallable, Client, Reliable)
-	void Client_OnEffectivenessUpdated(float CurrentEffectiveness, float MaxEffectiveness);
-
-	UFUNCTION(BlueprintCallable, Client, Reliable)
-	void Client_OnEnergyUpdated(float CurrentEnergy, float MaxEnergy);
 
 public:
 
@@ -52,9 +28,33 @@ public:
 
 protected:
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	USpringArmComponent* CameraBoom;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UCameraComponent* FollowCamera;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* LookAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* InteractAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* UltimateAbilityAction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "CustomValues|Ability")
+	FGameplayTagContainer UltimateAbilityTags;
+
+	UPROPERTY(EditDefaultsOnly, Category = "CustomValues|Ability")
+	FGameplayTagContainer InflateArmAbilityTags;
+
+	UPROPERTY(Replicated)
+	bool bIsArmless = false;
+
 	virtual void PossessedBy(AController* NewController) override;
 
-	void BindCallbacksToDependencies();
+	virtual void BindCallbacksToDependencies() override;
 
 	virtual void Move(const FInputActionValue& Value) override;
 
@@ -64,32 +64,38 @@ protected:
 
 	virtual void EmitInteractionChecker() override;
 
-	void TriggerAbility();
+	void TriggerInteraction() override;
+
+	void TriggerUltimateAbility();
 
 public:
 
-	UPROPERTY(EditDefaultsOnly, Category = "CustomValues|Animation")
-	UMaterialInterface* FlatBubbleMaterial;
+	UPROPERTY(EditAnywhere, Category = "CustomValues")
+	TSubclassOf<AFlatBubbleCharacter> FlatBubbleClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "CustomValues|Animation")
 	UAnimMontage* CleanAnimation;
 
 	UPROPERTY(EditDefaultsOnly, Category = "CustomValues|Animation")
-	UAnimMontage* InteractAnimation;
+	UAnimMontage* SeparateArmAnimation;
+
+	UPROPERTY(EditDefaultsOnly, Category = "CustomValues|Animation")
+	UAnimMontage* NaturalRegrowAnimation;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void BroadcastInitialValues();
+	UFUNCTION()
+	void PointCameraTowardsActor(UWorld* World, AActor* TargetActor, APlayerController* PlayerController);
 
-	UFUNCTION(Client, Reliable)
-	void Client_BroadcastInitialValues();
+	UFUNCTION(BlueprintCallable)
+	void SetIsArmless(bool NewValue);
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool IsArmless() const { return bIsArmless; }
 
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-
-	FFloatTransferSignature OnEffectivenessUpdated;
-	FFloatTransferSignature OnEnergyUpdated;
 
 };
 

@@ -43,6 +43,12 @@ protected:
 
 public:
 
+	UFUNCTION(BlueprintCallable)
+	void SpawnPaintableItems();
+
+	UFUNCTION(BlueprintCallable)
+	void DestroyPaintableItems();
+
 	int GetWinner() { return Cleaner + Contaminator; }
 
 	FIntegerTransferSignature OnCleanerPointsChanged;

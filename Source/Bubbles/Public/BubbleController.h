@@ -7,6 +7,8 @@
 #include "Headers/GeneralDelegates.h"
 #include "BubbleController.generated.h"
 
+class ABubbleCharacter;
+
 UENUM(BlueprintType)
 enum class EInputMode : uint8
 {
@@ -20,6 +22,44 @@ class BUBBLES_API ABubbleController : public APlayerController
 {
 	GENERATED_BODY()
 	
+protected:
+
+	UPROPERTY(VisibleAnywhere, Replicated, ReplicatedUsing = OnRep_CleannerPoints)
+	int CleanerPoints;
+
+	UPROPERTY(VisibleAnywhere, Replicated, ReplicatedUsing = OnRep_ContaminatorPoints)
+	int ContaminatorPoints;
+
+	UPROPERTY(VisibleAnywhere, Replicated, ReplicatedUsing = OnRep_GameProgress)
+	float GameProgress;
+
+	UPROPERTY(VisibleAnywhere, Replicated, ReplicatedUsing = OnRep_RemainingTime)
+	int RemainingTime;
+
+	UFUNCTION()
+	void OnRep_CleannerPoints();
+
+	UFUNCTION()
+	void OnRep_ContaminatorPoints();
+
+	UFUNCTION()
+	void OnRep_GameProgress();
+
+	UFUNCTION()
+	void OnRep_RemainingTime();
+
+	UFUNCTION(BlueprintCallable)
+	void BindPawnMappingContext(ABubbleCharacter* BubblePawn);
+
+	UFUNCTION(BlueprintCallable, Client, Reliable)
+	void Client_BindPawnMappingContext(ABubbleCharacter* BubblePawn);
+
+	UFUNCTION(BlueprintCallable)
+	void UnbindPawnMappingContext(ABubbleCharacter* BubblePawn);
+
+	UFUNCTION(BlueprintCallable, Client, Reliable)
+	void Client_UnbindPawnMappingContext(ABubbleCharacter* BubblePawn);
+
 public:
 
 	UPROPERTY(Replicated)
@@ -31,12 +71,20 @@ public:
 	UFUNCTION(Client, Reliable)
 	void Client_SetInputMode(EInputMode InputMode);
 
+	UFUNCTION(Client, Reliable)
+	void Client_SetupUIBindings();
+
 	void OnPossess(APawn* InPawn) override;
 
-	UFUNCTION(/*Client, Reliable*/)
+	void AcknowledgePossession(APawn* P) override;
+
+	UFUNCTION(BlueprintCallable)
+	void SetIsInputEnabled(bool NewValue);
+
+	UFUNCTION()
 	void OnSessionMessegeReceived(FText Messege);
 
-	UFUNCTION(Client, Reliable)
+	UFUNCTION()
 	void UpdateRemainingTime(int value);
 
 	UFUNCTION(Client, Reliable)
@@ -54,6 +102,9 @@ public:
 	UFUNCTION()
 	void OnProgress(float progress);
 
+	UFUNCTION()
+	void LeaveGame();
+
 	UPROPERTY(BlueprintAssignable)
 	FTextTransferSignature OnLobbyMessegeChanged;
 
@@ -61,7 +112,7 @@ public:
 	FIntegerTransferSignature OnCooldownUpdate;
 
 	UPROPERTY(BlueprintAssignable)
-	FVoidDataTransferSignature OnGameStart;
+	FVoidDataTransferSignature OnGameStarted;
 
 	UPROPERTY(BlueprintAssignable)
 	FTextTransferSignature OnGameEnd;

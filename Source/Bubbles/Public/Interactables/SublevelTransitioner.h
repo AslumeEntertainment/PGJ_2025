@@ -6,6 +6,9 @@
 #include "Interactables/ItemBase.h"
 #include "SublevelTransitioner.generated.h"
 
+
+class AHumanBubble;
+class ABubbleController;
 class AFlatBubbleCharacter;
 
 UCLASS()
@@ -16,16 +19,19 @@ class BUBBLES_API ASublevelTransitioner : public AItemBase
 protected:
 
 	UPROPERTY(EditAnywhere, Category = "SublevelInfo")
+	float EntryTime = 0.f;
+
+	UPROPERTY(EditAnywhere, Category = "SublevelInfo")
 	FVector SublevelStartingLocation;
 
 	UPROPERTY(EditAnywhere, Category = "SublevelInfo")
 	FRotator FlatBubbleSpawnRotation;
 
-	UPROPERTY(EditAnywhere, Category = "SublevelInfo")
-	TSubclassOf<AFlatBubbleCharacter> FlatBubbleClass;
-
 	UPROPERTY(EditInstanceOnly, Category = "SublevelInfo")
 	ACameraActor* SublevelCamera = nullptr;
+
+	UFUNCTION()
+	void ContinueInteraction(ABubbleController* PlayerCont, AHumanBubble* PlayerPawn);
 
 public:
 

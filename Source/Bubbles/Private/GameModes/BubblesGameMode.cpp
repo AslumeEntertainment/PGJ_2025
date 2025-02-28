@@ -61,12 +61,15 @@ void ABubblesGameMode::PostLogin(APlayerController* NewPlayer)
 	OnGameStart.AddDynamic(PC, &ABubbleController::HideStartingWidget);
 	OnGameEnd.AddDynamic(PC, &ABubbleController::ShowEndingWidget);
 
-	UE_LOG(LogTemp, Warning, TEXT("SETTING %s's BINDINGS"), *PC->GetName());
-
 	PC->Client_SetInputMode(EInputMode::UIOnly);//Must be GameOnly by default
-	//PC->OnConnectionCleanUp.AddDynamic(this, &AGameplayGameMode::UnRegisterRequest);
+	PC->Client_SetupUIBindings();
 
 	CheckLobbyReadiness();
+}
+
+void ABubblesGameMode::Logout(AController* Exiting)
+{
+	Super::Logout(Exiting);
 }
 
 
@@ -97,6 +100,8 @@ void ABubblesGameMode::PrepareGame()
 		UE_LOG(LogTemp, Error, TEXT("AGameplayGameMode::PostLogin IsValid(World) == false"));
 		return;
 	}
+
+	Spawner->SpawnPaintableItems();
 
 	FActorSpawnParameters Params;
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
@@ -138,7 +143,7 @@ void ABubblesGameMode::StartGame()
 	GetWorldTimerManager().SetTimer(GamePeriodTimer, this, &ABubblesGameMode::Countdown, 1, true, 1);
 }
 
-void ABubblesGameMode::Countdown() //tuka snqkuv delegat ima passvash ostavashtato vreme na vseki call
+void ABubblesGameMode::Countdown()
 {
 	GamePeriodLenght--;
 	OnCooldownUpdate.Broadcast(GamePeriodLenght);
@@ -151,9 +156,14 @@ void ABubblesGameMode::Countdown() //tuka snqkuv delegat ima passvash ostavashta
 	EndGame();
 }
 
-void ABubblesGameMode::EndGame() //tuka trqbva da podadesh na playerite widgeti dase vurnat kum main menu
+void ABubblesGameMode::EndGame()
 {
 	OnGameEnd.Broadcast(Spawner->GetWinner());
+}
+
+void ABubblesGameMode::ResetGame()
+{
+	//=====ToBeContinued=====>
 }
 
 void ABubblesGameMode::OnCleanPoints(int points)

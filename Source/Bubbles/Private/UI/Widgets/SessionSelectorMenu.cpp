@@ -10,6 +10,11 @@
 #include "UI/Widgets/SessionButtonWidget.h"
 
 
+void USessionSelectorMenu::OnRefreshClicked()
+{
+	RefreshClicked.Broadcast();
+}
+
 void USessionSelectorMenu::OnBackClicked()
 {
 	BackClicked.Broadcast();
@@ -25,6 +30,7 @@ void USessionSelectorMenu::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 	BTN_Back->OnClicked.AddDynamic(this, &USessionSelectorMenu::OnBackClicked);
+	BTN_Refresh->OnClicked.AddDynamic(this, &USessionSelectorMenu::OnRefreshClicked);
 
 	SessionWidgetSwitcher->SetActiveWidgetIndex(0);
 }

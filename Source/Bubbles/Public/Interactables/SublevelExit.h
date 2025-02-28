@@ -15,7 +15,13 @@ class BUBBLES_API ASublevelExit : public AItemBase
 protected:
 
 	UPROPERTY(EditAnywhere, Category = "SublevelExitProperties")
-	bool bIsExitSafe = false;
+	bool bIsSafeExit = false;
+
+	UPROPERTY(EditAnywhere, Category = "SublevelExitProperties")
+	float ExitTime = 0.f;
+
+	UFUNCTION()
+	void ContinueInteraction(ABubbleController* PlayerCont, AFlatBubbleCharacter* FlatBubble);
 
 public:
 

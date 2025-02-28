@@ -47,11 +47,13 @@ void APaintableItem::SetCleanness(int NewValue, bool bCanBypass)
 	
 	UE_LOG(LogTemp, Warning, TEXT("Cleaning - Cleanness: %d"), Cleanness);
 
+	OnCleannessUpdated.Broadcast();
 	UpdateTexture();
 }
 
 void APaintableItem::OnRep_Cleanness()
 {
+	OnCleannessUpdated.Broadcast();
 	UpdateTexture();
 }
 
@@ -97,13 +99,6 @@ void APaintableItem::ProgressCleaning()
 {
 	Iterations-= CleaningInterval;
 
-	AHumanBubble* PlayerPawn = Cast<AHumanBubble>(InteractingPlayer->GetPawn());
-	if (IsValid(PlayerPawn) == false)
-	{
-		UE_LOG(LogTemp, Error, TEXT("APaintableItem::ProgressCleaning IsValid(PlayerPawn) == false"));
-		return;
-	}
-
 	UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(InteractingPlayer->GetPawn());
 
 	if (IsValid(ASC) == false)
@@ -115,16 +110,12 @@ void APaintableItem::ProgressCleaning()
 	const UBubbleAttributeSet* AttributeSet = Cast<UBubbleAttributeSet>(ASC->GetAttributeSet(UBubbleAttributeSet::StaticClass()));
 
 	SetCleanness(Cleanness + AttributeSet->GetEffectiveness());
-	
-	PlayerPawn->UpdateInteractionText(GetInteractableName(), true);
 
 	if (AttributeSet->GetEffectiveness() > 0) NetMulticast_ShowEffect(CleannessUpEffect);
 	else if (AttributeSet->GetEffectiveness() < 0) NetMulticast_ShowEffect(CleannessDownEffect);
 
 	if ((FMath::Abs(Cleanness) >= MaxCleanness && FMath::Sign(AttributeSet->GetEffectiveness()) == FMath::Sign(Cleanness)) )
 	{
-		OnCleannessUpdated.Broadcast();
-
 		IsLocked = false;
 		StopInteraction(true);
 		return;
@@ -148,13 +139,17 @@ void APaintableItem::StopInteraction(bool GiveEnregy)
 	}
 
 	AHumanBubble* PlayerPawn = Cast<AHumanBubble>(InteractingPlayer->GetPawn());
-	if (IsValid(PlayerPawn))
+	if (IsValid(PlayerPawn) == false)
 	{
-		PlayerPawn->NetMulticast_StopAnimationMontage(PlayerPawn->CleanAnimation);
+		UE_LOG(LogTemp, Error, TEXT("APaintableItem::InteractRequest IsValid(PlayerPawn) == false"));
+		return;
 	}
 
-	InteractingPlayer->Client_SetInputMode(EInputMode::GameOnly);
+	PlayerPawn->NetMulticast_StopAnimationMontage(PlayerPawn->CleanAnimation);
+
+	InteractingPlayer->SetIsInputEnabled(true);
 	InteractingPlayer = nullptr;
+
 	GetWorldTimerManager().ClearTimer(CleaningPeriodTimer);
 	CleaningPeriodTimer.Invalidate();
 
@@ -170,15 +165,19 @@ void APaintableItem::InteractRequest(AController* InteractingCharacter)
 	}
 
 	InteractingPlayer = Cast<ABubbleController>(InteractingCharacter);
-	InteractingPlayer->Client_SetInputMode(EInputMode::UIOnly);
 
 	AHumanBubble* PlayerPawn = Cast<AHumanBubble>(InteractingCharacter->GetPawn());
-	if (IsValid(PlayerPawn))
+	if (IsValid(PlayerPawn) == false)
 	{
-		PlayerPawn->NetMulticast_PlayAnimationMontage(PlayerPawn->CleanAnimation);
+		UE_LOG(LogTemp, Error, TEXT("APaintableItem::InteractRequest IsValid(PlayerPawn) == false"));
+		return;
 	}
 
-	//SetOwner(InteractingPlayer);
+	InteractingPlayer->SetIsInputEnabled(false);
+	InteractingPlayer->StopMovement();
+
+	PlayerPawn->NetMulticast_PlayAnimationMontage(PlayerPawn->CleanAnimation);
+
 	IsLocked = true;
 	UE_LOG(LogTemp, Warning, TEXT("Starting Clean - Cleanness: %d Step:%d"), Cleanness, Iterations);
 	

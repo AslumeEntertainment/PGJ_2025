@@ -6,6 +6,7 @@
 #include "Components/CapsuleComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "InputActionValue.h"
 
 AFlatBubbleCharacter::AFlatBubbleCharacter()
@@ -45,7 +46,6 @@ void AFlatBubbleCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
-	//SetActorRotation(FRotator(0, 0, 0));
 	InteractionCapsule->OnComponentBeginOverlap.AddDynamic(this, &AFlatBubbleCharacter::OnInteractionCapsuleBeginOverlap);
 }
 
@@ -58,24 +58,53 @@ void AFlatBubbleCharacter::OnRep_PlayerState()
 
 void AFlatBubbleCharacter::StartCrouch()
 {
+	float ScaleX = GetMesh()->GetRelativeScale3D().X;
+	GetMesh()->SetRelativeScale3D(FVector(ScaleX, ScaleX, ScaleX / 2));
 	Crouch();
 }
 
 void AFlatBubbleCharacter::StopCrouch()
 {
+	float ScaleX = GetMesh()->GetRelativeScale3D().X;
+	GetMesh()->SetRelativeScale3D(FVector(ScaleX, ScaleX, ScaleX));
 	UnCrouch();
 }
 
 void AFlatBubbleCharacter::OnInteractionCapsuleBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Flat bubble has overlaped"));
+	if (GetActorScale3D() == FVector(0.001f)) return;
+
+	if (bShouldDrawDebug)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Flat bubble has overlaped"));
+	}
 	if (CheckForInteractables(SweepResult))
 	{
 		TriggerInteraction();
 	}
 }
 
-void AFlatBubbleCharacter::NetMulticast_SetFlatBubbleMaterial_Implementation(UMaterialInterface* FlatBubbleMaterial)
+void AFlatBubbleCharacter::Pop_Implementation(bool bShouldDestroy)
 {
-	GetMesh()->SetMaterial(0, FlatBubbleMaterial);
+	UWorld* World = GetWorld();
+	if (IsValid(World) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AFlatBubbleCharacter::Pop_Implementation IsValid(World) == false"));
+		return;
+	}
+	if (IsValid(BubbleBurstEffect) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AFlatBubbleCharacter::Pop_Implementation IsValid(BubbleBurstEffect) == false"));
+		return;
+	}
+
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, BubbleBurstEffect, GetActorLocation(), GetActorRotation());
+
+	if (bShouldDestroy)
+	{
+		Destroy();
+		return;
+	}
+
+	SetActorScale3D(FVector(0.001f));
 }

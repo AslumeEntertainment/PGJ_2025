@@ -7,9 +7,11 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Controller.h"
-#include "EnhancedInputComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "EnhancedInputSubsystems.h"
+#include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
+#include "Net/UnrealNetwork.h"
 
 #include "AbilitySystemComponent.h"
 #include "GAS/BubbleAttributeSet.h"
@@ -20,6 +22,12 @@
 //////////////////////////////////////////////////////////////////////////
 // ABubblesCharacter
 
+void AHumanBubble::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION_NOTIFY(AHumanBubble, bIsArmless, COND_None, REPNOTIFY_Always);
+}
 
 AHumanBubble::AHumanBubble()
 {
@@ -60,16 +68,6 @@ AHumanBubble::AHumanBubble()
 
 
 	PrimaryActorTick.bCanEverTick = true;
-}
-
-void AHumanBubble::Client_OnEffectivenessUpdated_Implementation(float CurrentEffectiveness, float MaxEffectiveness)
-{
-	OnEffectivenessUpdated.Broadcast(CurrentEffectiveness / MaxEffectiveness);
-}
-
-void AHumanBubble::Client_OnEnergyUpdated_Implementation(float CurrentEnergy, float MaxEnergy)
-{
-	OnEnergyUpdated.Broadcast(CurrentEnergy / MaxEnergy);
 }
 
 void AHumanBubble::Tick(float DeltaTime)
@@ -113,13 +111,19 @@ void AHumanBubble::EmitInteractionChecker()
 	CheckForInteractables(HitResult);
 }
 
-void AHumanBubble::TriggerAbility()
+void AHumanBubble::TriggerInteraction()
 {
-	//FGameplayEventData Data = FGameplayEventData();
-	//Data.Instigator = this;
-	//AbilitySystemComponent->HandleGameplayEvent(AbilityTag, &Data);
-	AbilitySystemComponent->TryActivateAbilitiesByTag(AbilityTag);
-	//AbilitySystemComponent->Try
+	if (bIsArmless)
+	{
+		AbilitySystemComponent->TryActivateAbilitiesByTag(InflateArmAbilityTags);
+		return;
+	}
+	AbilitySystemComponent->TryActivateAbilitiesByTag(InteractionAbilityTags);
+}
+
+void AHumanBubble::TriggerUltimateAbility()
+{
+	AbilitySystemComponent->TryActivateAbilitiesByTag(UltimateAbilityTags);
 }
 
 void AHumanBubble::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -129,7 +133,7 @@ void AHumanBubble::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) 
 	{
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &AHumanBubble::TriggerInteraction);
-		EnhancedInputComponent->BindAction(AbilityAction, ETriggerEvent::Triggered, this, &AHumanBubble::TriggerAbility);
+		EnhancedInputComponent->BindAction(UltimateAbilityAction, ETriggerEvent::Triggered, this, &AHumanBubble::TriggerUltimateAbility);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AHumanBubble::Look);
 	}
 	else
@@ -138,18 +142,66 @@ void AHumanBubble::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	}
 }
 
+void AHumanBubble::PointCameraTowardsActor(UWorld* World, AActor* TargetActor, APlayerController* PlayerController)
+{
+	if (IsValid(GetController()) == false)
+	{
+		return;
+	}
+	if (IsValid(World) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AHumanBubble::PointCameraTowardsActor IsValid(World) == false"));
+		return;
+	}
+	if (IsValid(TargetActor) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AHumanBubble::PointCameraTowardsActor IsValid(TargetActor) == false"));
+		return;
+	}
+	if (IsValid(PlayerController) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AHumanBubble::PointCameraTowardsActor IsValid(PlayerController) == false"));
+		return;
+	}
+
+	FVector NormalizedLocation = TargetActor->GetActorLocation() - FollowCamera->GetComponentLocation();
+	UKismetMathLibrary::Vector_Normalize(NormalizedLocation);
+
+	float DotProduct = FVector::DotProduct(NormalizedLocation, FollowCamera->GetForwardVector());
+
+	//GEngine->AddOnScreenDebugMessage(5, 5, FColor::Orange, FString::Printf(TEXT("DotProduct - %.3f"), DotProduct));
+	
+	if (FMath::Abs(DotProduct) >= 1.f)
+	{
+		return;
+	}
+
+	FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(FollowCamera->GetComponentLocation(), TargetActor->GetActorLocation());
+	FRotator InterpRotation = UKismetMathLibrary::RInterpTo(GetControlRotation(), LookAtRotation, World->DeltaTimeSeconds, 20);
+
+	PlayerController->SetControlRotation(InterpRotation);
+
+	FTimerHandle RotateTimer;
+	FTimerDelegate RotateTimerDelegate;
+
+	RotateTimerDelegate.BindUFunction(this, FName("PointCameraTowardsActor"), World, TargetActor, PlayerController);
+	GetWorldTimerManager().SetTimer(RotateTimer, RotateTimerDelegate, 0.01f, false);
+}
+
+void AHumanBubble::SetIsArmless(bool NewValue)
+{
+	bIsArmless = NewValue;
+}
+
 void AHumanBubble::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
-
-	if (bAreAttributesBoundToUI == false)
-	{
-		BindCallbacksToDependencies();
-	}
 }
 
 void AHumanBubble::BindCallbacksToDependencies()
 {
+	Super::BindCallbacksToDependencies();
+
 	if (IsValid(AbilitySystemComponent) == false)
 	{
 		UE_LOG(LogTemp, Error, TEXT("AHumanBubble::BindCallbacksToDependencies IsValid(AbilitySystemComponent) == false"));
@@ -161,14 +213,6 @@ void AHumanBubble::BindCallbacksToDependencies()
 		return;
 	}
 
-	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetEffectivenessAttribute()).AddLambda
-	(
-		[this](const FOnAttributeChangeData& Data)
-		{
-			Client_OnEffectivenessUpdated(Data.NewValue, AttributeSet->GetMaxEffectiveness());
-		}
-	);
-
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetEnergyAttribute()).AddLambda
 	(
 		[this](const FOnAttributeChangeData& Data)
@@ -176,31 +220,6 @@ void AHumanBubble::BindCallbacksToDependencies()
 			Client_OnEnergyUpdated(Data.NewValue, AttributeSet->GetMaxEnergy());
 		}
 	);
-
-	bAreAttributesBoundToUI = true;
-}
-
-void AHumanBubble::BroadcastInitialValues()
-{
-	if (HasAuthority() == false)
-	{
-		FTimerHandle BroadcastInitialValuesTimerHandle;
-		GetWorldTimerManager().SetTimer(BroadcastInitialValuesTimerHandle, this, &AHumanBubble::Client_BroadcastInitialValues, 0.5f, false);
-	}
-
-	if (IsValid(AttributeSet) == false)
-	{
-		UE_LOG(LogTemp, Error, TEXT("AHumanBubble::BroadcastInitialValues IsValid(AttributeSet) == false"));
-		return;
-	}
-
-	Client_OnEffectivenessUpdated(AttributeSet->GetEffectiveness(), AttributeSet->GetMaxEffectiveness());
-	Client_OnEnergyUpdated(AttributeSet->GetEnergy(), AttributeSet->GetMaxEnergy());
-}
-
-void AHumanBubble::Client_BroadcastInitialValues_Implementation()
-{
-	BroadcastInitialValues();
 }
 
 void AHumanBubble::Move(const FInputActionValue& Value)

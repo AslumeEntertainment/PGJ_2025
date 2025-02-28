@@ -49,5 +49,25 @@ void UInGameOverlay::SetEffectivenessPercent(float EffectivenessPercent)
 void UInGameOverlay::SetEnergyPercent(float EnergyPercent)
 {
 	EnergyProgressBar->SetPercent(EnergyPercent);
+	TXT_UltimateIndicator->SetRenderOpacity(EnergyPercent == 1.f ? 1 : 0);
+}
+
+void UInGameOverlay::SetBubbleEffectivenessPercent(float BubbleEffectivenessPercent)
+{
+	if (BubbleEffectivenessPercent > 0)
+	{
+		BubbleEffectivenessProgressBar->SetFillColorAndOpacity(GameProgressBar->GetFillColorAndOpacity());
+	}
+	else
+	{
+		BubbleEffectivenessProgressBar->SetFillColorAndOpacity(TXT_ContaminatorScore->GetColorAndOpacity().GetSpecifiedColor());
+	}
+	BubbleEffectivenessProgressBar->SetPercent(FMath::Abs(BubbleEffectivenessPercent));
+}
+
+void UInGameOverlay::SetBubbleEffectivenessVisibility(bool bIsVisible)
+{
+	BubbleEffectivenessProgressBar->SetRenderOpacity(bIsVisible ? 1.f : 0.f);
+	TXT_BubbleEffectiveness->SetRenderOpacity(bIsVisible ? 1.f : 0.f);
 }
 
